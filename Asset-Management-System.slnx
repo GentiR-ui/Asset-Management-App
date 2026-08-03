@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/AssetManagementSystem.API/">
+    <Project Path="AssetManagementSystem.API/AssetManagementSystem.csproj" />
+  </Folder>
+  <Project Path="AssetManagementSystem.Application/AssetManagementSystem.Application.csproj" />
+  <Project Path="AssetManagementSystem.Domain/AssetManagementSystem.Domain.csproj" />
+  <Project Path="AssetManagementSystem.Infrastructure/AssetManagementSystem.Infrastructure.csproj" />
+</Solution>
