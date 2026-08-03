@@ -17,6 +17,6 @@ public class ApplicationDbContext
     {
         base.OnModelCreating(builder);
 
-        // konfigurimet do t'i shtojmë këtu
+        builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
