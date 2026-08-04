@@ -1,0 +1,13 @@
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\bin\Debug\net10.0\AssetManagementSystem.Domain.deps.json
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\bin\Debug\net10.0\AssetManagementSystem.Domain.dll
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\bin\Debug\net10.0\AssetManagementSystem.Domain.pdb
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.csproj.AssemblyReference.cache
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.AssemblyInfoInputs.cache
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.AssemblyInfo.cs
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.csproj.CoreCompileInputs.cache
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.sourcelink.json
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.dll
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\refint\AssetManagementSystem.Domain.dll
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\AssetManagementSystem.Domain.pdb
+C:\Users\genti\OneDrive\Desktop\Internship\Asset-Management-App\AssetManagementSystem.Domain\obj\Debug\net10.0\ref\AssetManagementSystem.Domain.dll

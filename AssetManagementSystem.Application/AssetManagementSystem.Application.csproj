@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\AssetManagementSystem.Domain\AssetManagementSystem.Domain.csproj" />
+    <ProjectReference Include="..\AssetManagementSystem.Infrastructure\AssetManagementSystem.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

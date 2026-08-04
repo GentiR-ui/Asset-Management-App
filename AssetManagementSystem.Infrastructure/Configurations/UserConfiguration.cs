@@ -2,7 +2,7 @@ using AssetManagementSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AssetManagementSystem.Infrastructure.Persistence.Configurations;
+namespace AssetManagementSystem.Infrastructure.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
