@@ -1,3 +1,7 @@
+using AssetManagementSystem.Domain.Entities;
+using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +19,11 @@ public static class ServiceCollectionExtensions
                 configuration.GetConnectionString("DefaultConnection")));
 
                 
-        
+        services.AddIdentity<User, UserRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.AddScoped<IIdentityProvider, IdentityProvider>();
     }
 
     
