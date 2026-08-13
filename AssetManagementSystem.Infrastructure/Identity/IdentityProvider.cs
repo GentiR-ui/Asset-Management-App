@@ -1,5 +1,7 @@
 using AssetManagementSystem.Domain.Entities;
+using AssetManagementSystem.Domain.Errors;
 using AssetManagementSystem.Domain.Interfaces;
+using ErrorOr;
 using Microsoft.AspNetCore.Identity;
 
 namespace AssetManagementSystem.Infrastructure.Identity;
@@ -17,7 +19,7 @@ public class IdentityProvider : IIdentityProvider
         _signInManager = signInManager;
     }
 
-    public async Task<bool> CreateUserAsync(
+    public async Task<ErrorOr<User>> CreateUserAsync(
         string firstName,
         string lastName,
         string email,
@@ -33,23 +35,79 @@ public class IdentityProvider : IIdentityProvider
 
         var result = await _userManager.CreateAsync(user, password);
 
-        return result.Succeeded;
+        if (result.Succeeded)
+        {
+            return user;
+        }
+
+        return result.Errors
+            .Select(identityError => MapIdentityError(identityError, email))
+            .DistinctBy(error => error.Code)
+            .ToList();
     }
 
-    public async Task<bool> ValidatePasswordAsync(
-        string email,
-        string password)
+    public async Task<ErrorOr<User>> ValidateCredentialsAsync(string email, string password)
     {
         var user = await _userManager.FindByEmailAsync(email);
 
-        if (user == null)
-            return false;
+        // Nëse useri s'ekziston kthejmë TË NJËJTIN gabim si për password gabim.
+        // Ndryshe dikush mund t'i provojë email-at një nga një dhe të mësojë cilët ekzistojnë.
+        if (user is null)
+        {
+            return IdentityErrors.InvalidCredentials;
+        }
 
         var result = await _signInManager.CheckPasswordSignInAsync(
             user,
             password,
-            false);
+            lockoutOnFailure: true);
 
-        return result.Succeeded;
+        
+
+        if (result.IsLockedOut)
+        {
+            return IdentityErrors.UserLockedOut;
+        }
+
+
+        if (result.IsNotAllowed)
+        {
+            return IdentityErrors.EmailNotConfirmed;
+        }
+
+
+        if (!result.Succeeded)
+        {
+            return IdentityErrors.InvalidCredentials;
+        }
+
+        return user;
     }
+
+    public Task<IList<string>> GetRolesAsync(User user) => _userManager.GetRolesAsync(user);
+
+    public Task AddToRoleAsync(User user, string role) => _userManager.AddToRoleAsync(user, role);
+
+    private static Error MapIdentityError(IdentityError identityError, string email) =>
+        identityError.Code switch
+        {
+            "DuplicateEmail" or "DuplicateUserName" => IdentityErrors.EmailAlreadyExists(email),
+            _ => IdentityErrors.FromIdentity(identityError.Code, identityError.Description)
+        };
+
+    public Task<string> GenerateEmailConfirmationTokenAsync(User user) =>
+    _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+    public Task<User?> FindByEmailAsync(string email) => _userManager.FindByEmailAsync(email);
+
+    public async Task<ErrorOr<Success>> ConfirmEmailAsync(User user, string token)
+    {
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        return result.Succeeded
+            ? Result.Success
+            : IdentityErrors.InvalidConfirmationToken;
+    }
+
+
 }

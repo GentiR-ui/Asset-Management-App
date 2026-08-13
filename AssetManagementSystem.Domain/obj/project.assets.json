@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     "net10.0": {
+      "ErrorOr/2.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/ErrorOr.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/ErrorOr.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Cryptography.Internal/10.0.10": {
         "type": "package",
         "compile": {
@@ -324,6 +337,25 @@
     }
   },
   "libraries": {
+    "ErrorOr/2.1.1": {
+      "sha512": "Y/AhvEZ5DjSi993Db1VrnYpK8YpM4o+tonF4f+AtXDzrIHYvbjWJD7fpip+ugSwW8kMw+XXEnMlJM7E0BKJBWA==",
+      "type": "package",
+      "path": "erroror/2.1.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "erroror.2.1.1.nupkg.sha512",
+        "erroror.nuspec",
+        "icon-square.png",
+        "lib/net10.0/ErrorOr.dll",
+        "lib/net10.0/ErrorOr.xml",
+        "lib/net8.0/ErrorOr.dll",
+        "lib/net8.0/ErrorOr.xml",
+        "lib/netstandard2.0/ErrorOr.dll",
+        "lib/netstandard2.0/ErrorOr.xml"
+      ]
+    },
     "Microsoft.AspNetCore.Cryptography.Internal/10.0.10": {
       "sha512": "T/kOT3kAVZU1B0QlpRxASpdbAJ/o5DLFW7bWS6vyE44uMqPmojEcaFENt6ww1xaLH++ZNwsEJ1YUOwPK050lNQ==",
       "type": "package",
@@ -855,6 +887,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "ErrorOr >= 2.1.1",
       "Microsoft.Extensions.Identity.Stores >= 10.0.10"
     ]
   },
@@ -908,6 +941,10 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
+          "ErrorOr": {
+            "target": "Package",
+            "version": "[2.1.1, )"
+          },
           "Microsoft.Extensions.Identity.Stores": {
             "target": "Package",
             "version": "[10.0.10, )"

@@ -1,6 +1,8 @@
-using AssetManagementSystem.Application.Interfaces;
-using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.API.Filters;
+using AssetManagementSystem.Application.DependencyInjection;
 using AssetManagementSystem.Infrastructure.DependencyInjection;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+    options.Filters.Add<ExceptionFilter>();
+});
+
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddScoped<IIdentityService, IdentityService>();
+
 
 var app = builder.Build();
 
@@ -17,9 +26,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    await app.SeedDatabaseAsync();
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();
 

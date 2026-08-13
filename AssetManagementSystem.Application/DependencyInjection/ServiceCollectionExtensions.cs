@@ -1,0 +1,22 @@
+using AssetManagementSystem.Application.Interfaces;
+using AssetManagementSystem.Application.Services;
+using AssetManagementSystem.Application.Validators;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace AssetManagementSystem.Application.DependencyInjection;
+
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+
+        return services;
+        
+       
+    }
+}
