@@ -29,5 +29,8 @@ public static class IdentityErrors
         code: "Identity.InvalidConfirmationToken",
         description: "The confirmation link is invalid or has expired.");
 
+    public static Error InvalidPasswordResetToken => Error.Validation(
+    code: "Identity.InvalidPasswordResetToken",
+    description: "The password reset link is invalid or has expired.");
 
 }

@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Common.Responses;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -18,9 +19,9 @@ public sealed class ValidationFilter : IAsyncActionFilter
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        var modelState = new ModelStateDictionary();
+        var modelState = new ModelStateDictionary();          // ← u fshi
 
-        foreach (var argument in context.ActionArguments.Values)
+        foreach (var argument in context.ActionArguments.Values)   // ← u fshi
         {
             if (argument is null)
             {
@@ -35,7 +36,8 @@ public sealed class ValidationFilter : IAsyncActionFilter
             }
 
             var validationContext = new ValidationContext<object>(argument);
-            var result = await validator.ValidateAsync(validationContext, context.HttpContext.RequestAborted);
+            var result = await validator.ValidateAsync(
+                validationContext, context.HttpContext.RequestAborted);
 
             foreach (var failure in result.Errors)
             {
@@ -45,11 +47,20 @@ public sealed class ValidationFilter : IAsyncActionFilter
 
         if (!modelState.IsValid)
         {
-            // Ndalojmë këtu — controller-i nuk thirret fare.
-            context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));
+            var response = new BaseResponse
+            {
+                Success = false,
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "One or more validation errors occurred.",
+                Errors = modelState.ToDictionary(
+                    entry => entry.Key,
+                    entry => entry.Value!.Errors.Select(e => e.ErrorMessage).ToArray())
+            };
+
+            context.Result = new ObjectResult(response) { StatusCode = StatusCodes.Status400BadRequest };
             return;
         }
 
-        await next();
+        await next();                                          // ← u fshi
     }
 }

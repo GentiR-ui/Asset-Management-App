@@ -8,18 +8,17 @@ using ErrorOr;
 
 namespace AssetManagementSystem.Application.Services;
 
-public class IdentityService : IIdentityService
+public class AuthService : IAuthService
 {
     private readonly IIdentityProvider _identityProvider;
-
-    
-
     private readonly IEmailSender _emailSender;
+    private readonly ITokenService _tokenService;
 
-    public IdentityService(IIdentityProvider identityProvider, IEmailSender emailSender)
+    public AuthService(IIdentityProvider identityProvider, IEmailSender emailSender, ITokenService tokenService)
     {
         _identityProvider = identityProvider;
         _emailSender = emailSender;
+        _tokenService = tokenService;
     }
 
 
@@ -66,14 +65,15 @@ public class IdentityService : IIdentityService
     private async Task<AuthResponse> BuildAuthResponseAsync(User user)
     {
         var roles = await _identityProvider.GetRolesAsync(user);
+        var accessToken = _tokenService.GenerateToken(user,roles);
 
         return new AuthResponse
         {
             UserId = user.Id,
             Email = user.Email ?? string.Empty,
             FullName = $"{user.FirstName} {user.LastName}",
-            Token = "TODO-jwt-not-implemented-yet",
-            ExpiresAtUtc = DateTime.UtcNow.AddHours(1),
+            Token = accessToken.Value,
+            ExpiresAtUtc = accessToken.ExpiresAtUtc,
             Roles = roles.ToList()
         };
     }
@@ -90,6 +90,58 @@ public class IdentityService : IIdentityService
 
         return await _identityProvider.ConfirmEmailAsync(user, request.Token);
     }
+    public async Task<ErrorOr<Success>> ResendConfirmationAsync(ResendConfirmationRequest request)
+    {
+        var user = await _identityProvider.FindByEmailAsync(request.Email);
+
+        
+        if (user is null || user.EmailConfirmed)
+        {
+            return Result.Success;
+        }
+
+        var token = await _identityProvider.GenerateEmailConfirmationTokenAsync(user);
+
+        await _emailSender.SendAsync(
+            to: request.Email,
+            subject: "Confirm your email",
+            body: $"Your confirmation token:\n\n{token}");
+
+        return Result.Success;
+    }
+    public async Task<ErrorOr<Success>> ForgotPasswordAsync(ForgotPasswordRequest request)
+    {
+        var user = await _identityProvider.FindByEmailAsync(request.Email);
+
+        // 🔒 Sukses gjithmonë — i njëjti arsyetim si te resend-confirmation.
+        if (user is null)
+        {
+            return Result.Success;
+        }
+
+        var token = await _identityProvider.GeneratePasswordResetTokenAsync(user);
+
+        await _emailSender.SendAsync(
+            to: request.Email,
+            subject: "Reset your password",
+            body: $"Your password reset token:\n\n{token}");
+
+        return Result.Success;
+    }
+
+    public async Task<ErrorOr<Success>> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _identityProvider.FindByEmailAsync(request.Email);
+
+        // Mos zbulo nëse email-i ekziston — i njëjti gabim si për token të keq.
+        if (user is null)
+        {
+            return IdentityErrors.InvalidPasswordResetToken;
+        }
+
+        return await _identityProvider.ResetPasswordAsync(user, request.Token, request.NewPassword);
+    }
+
 
 
 

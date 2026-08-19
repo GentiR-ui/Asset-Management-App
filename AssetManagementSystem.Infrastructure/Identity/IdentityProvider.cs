@@ -108,6 +108,26 @@ public class IdentityProvider : IIdentityProvider
             ? Result.Success
             : IdentityErrors.InvalidConfirmationToken;
     }
+    public Task<string> GeneratePasswordResetTokenAsync(User user) =>
+    _userManager.GeneratePasswordResetTokenAsync(user);
+
+    public async Task<ErrorOr<Success>> ResetPasswordAsync(User user, string token, string newPassword)
+    {
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+        if (result.Succeeded)
+        {
+            return Result.Success;
+        }
+
+        return result.Errors
+            .Select(identityError => identityError.Code is "InvalidToken"
+                ? IdentityErrors.InvalidPasswordResetToken
+                : IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .DistinctBy(error => error.Code)
+            .ToList();
+    }
+
 
 
 }

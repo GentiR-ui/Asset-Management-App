@@ -20,5 +20,7 @@ public interface IIdentityProvider
     Task<string> GenerateEmailConfirmationTokenAsync(User user);
     Task<ErrorOr<Success>> ConfirmEmailAsync(User user, string token);
     Task<User?> FindByEmailAsync(string email);
+    Task<string> GeneratePasswordResetTokenAsync(User user);
+    Task<ErrorOr<Success>> ResetPasswordAsync(User user, string token, string newPassword);
 
 }

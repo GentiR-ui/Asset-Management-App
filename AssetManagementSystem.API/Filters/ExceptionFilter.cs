@@ -1,95 +1,68 @@
+using AssetManagementSystem.Application.Common.Responses;
 using AssetManagementSystem.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
+
+
+
 namespace AssetManagementSystem.API.Filters;
 
-public sealed class ExceptionFilter : IExceptionFilter
-{
-    private readonly ILogger<ExceptionFilter> _logger;
-    private readonly IHostEnvironment _environment;
-
-    public ExceptionFilter(ILogger<ExceptionFilter> logger, IHostEnvironment environment)
+    public sealed class ExceptionFilter : IExceptionFilter
     {
-        _logger = logger;
-        _environment = environment;
-    }
+        private readonly ILogger<ExceptionFilter> _logger;
+        private readonly IHostEnvironment _environment;
 
-    public void OnException(ExceptionContext context)
-    {
-        ProblemDetails problemDetails = context.Exception switch
+        public ExceptionFilter(ILogger<ExceptionFilter> logger, IHostEnvironment environment)
         {
-            
-            ValidationException validationException => BuildValidationProblem(validationException),
+            _logger = logger;
+            _environment = environment;
+        }
 
-            
-            AppException appException => BuildAppProblem(appException),
+        public void OnException(ExceptionContext context)
+        {
+            var response = context.Exception switch
+            {
+                ValidationException e => new BaseResponse
+                {
+                    Success = false,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = e.Message,
+                    Errors = e.Errors
+                },
 
-            _ => BuildUnexpectedProblem(context.Exception)
+                BadRequestException e   => Build(StatusCodes.Status400BadRequest, e.Message),
+                UnauthorizedException e => Build(StatusCodes.Status401Unauthorized, e.Message),
+                ForbiddenException e    => Build(StatusCodes.Status403Forbidden, e.Message),
+                NotFoundException e     => Build(StatusCodes.Status404NotFound, e.Message),
+                ConflictException e     => Build(StatusCodes.Status409Conflict, e.Message),
+
+                _ => BuildUnexpected(context.Exception)
+            };
+
+            context.Result = new ObjectResult(response) { StatusCode = response.StatusCode };
+            context.ExceptionHandled = true;
+        }
+
+        private static BaseResponse Build(int statusCode, string message) => new()
+        {
+            Success = false,
+            StatusCode = statusCode,
+            Message = message
         };
 
-        context.Result = new ObjectResult(problemDetails)
+        private BaseResponse BuildUnexpected(Exception exception)
         {
-            StatusCode = problemDetails.Status
-        };
+            _logger.LogError(exception, "Unhandled exception");
 
-        
-        context.ExceptionHandled = true;
-    }
+            return new BaseResponse
+            {
+                Success = false,
+                StatusCode = StatusCodes.Status500InternalServerError,
+                Message = _environment.IsDevelopment()
+                    ? exception.ToString()
+                    : "An unexpected error occurred."
+            };
+        }
 
-    private ValidationProblemDetails BuildValidationProblem(ValidationException exception)
-    {
-        _logger.LogWarning("Validation failed for {Path}", exception.Errors.Keys);
-
-        return new ValidationProblemDetails(
-            exception.Errors.ToDictionary(error => error.Key, error => error.Value))
-        {
-            Status = StatusCodes.Status400BadRequest,
-            Title = exception.Message
-        };
-    }
-
-    private ProblemDetails BuildAppProblem(AppException exception)
-    {
-        
-        _logger.LogWarning(
-            "Handled {ErrorType}: {Message}",
-            exception.ErrorType,
-            exception.Message);
-
-        return new ProblemDetails
-        {
-            Status = ToStatusCode(exception.ErrorType),
-            Title = exception.ErrorType.ToString(),
-            Detail = exception.Message
-        };
-    }
-
-    private ProblemDetails BuildUnexpectedProblem(Exception exception)
-    {
-
-        _logger.LogError(exception, "Unhandled exception");
-
-        return new ProblemDetails
-        {
-            Status = StatusCodes.Status500InternalServerError,
-            Title = "An unexpected error occurred.",
-
-            
-            Detail = _environment.IsDevelopment() ? exception.ToString() : null
-        };
-    }
-
-
-    private static int ToStatusCode(AppErrorType errorType) => errorType switch
-    {
-        AppErrorType.Validation => StatusCodes.Status400BadRequest,
-        AppErrorType.BadRequest => StatusCodes.Status400BadRequest,
-        AppErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-        AppErrorType.Forbidden => StatusCodes.Status403Forbidden,
-        AppErrorType.NotFound => StatusCodes.Status404NotFound,
-        AppErrorType.Conflict => StatusCodes.Status409Conflict,
-        AppErrorType.Unexpected => StatusCodes.Status500InternalServerError,
-        _ => StatusCodes.Status500InternalServerError
-    };
 }

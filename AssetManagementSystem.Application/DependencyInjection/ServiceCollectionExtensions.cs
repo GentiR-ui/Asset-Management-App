@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
         return services;
