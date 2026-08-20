@@ -1,14 +1,36 @@
+using System.Security.Claims;
+using AssetManagementSystem.Application.Common.Responses;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using AssetManagementSystem.Application.Common.Responses;
 
 namespace AssetManagementSystem.API.Controllers;
 
 [ApiController]
 public abstract class ApiControllerBase : ControllerBase
 {
-   protected IActionResult Problem(List<Error> errors)
+   
+    protected Guid CurrentUserId =>
+        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    protected IActionResult Success<T>(T data, int statusCode = StatusCodes.Status200OK) =>
+        new ObjectResult(new BaseResponse<T>
+        {
+            Success = true,
+            StatusCode = statusCode,
+            Data = data
+        })
+        { StatusCode = statusCode };
+
+    protected IActionResult Success(string message, int statusCode = StatusCodes.Status200OK) =>
+        new ObjectResult(new BaseResponse
+        {
+            Success = true,
+            StatusCode = statusCode,
+            Message = message
+        })
+        { StatusCode = statusCode };
+
+    protected IActionResult Problem(List<Error> errors)
     {
         if (errors.Count is 0)
         {
@@ -40,37 +62,16 @@ public abstract class ApiControllerBase : ControllerBase
             Success = false,
             StatusCode = statusCode,
             Message = message
-        }) { StatusCode = statusCode };
+        })
+        { StatusCode = statusCode };
 
     private static int ToStatusCode(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation   => StatusCodes.Status400BadRequest,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden    => StatusCodes.Status403Forbidden,
-            ErrorType.NotFound     => StatusCodes.Status404NotFound,
-            ErrorType.Conflict     => StatusCodes.Status409Conflict,
-            _                      => StatusCodes.Status500InternalServerError
-        };
-
-
-
-    
-
-    protected IActionResult Success<T>(T data, int statusCode = StatusCodes.Status200OK) =>
-        new ObjectResult(new BaseResponse<T>
-        {
-            Success = true,
-            StatusCode = statusCode,
-            Data = data
-        }) { StatusCode = statusCode };
-
-    protected IActionResult Success(string message, int statusCode = StatusCodes.Status200OK) =>
-        new ObjectResult(new BaseResponse
-        {
-            Success = true,
-            StatusCode = statusCode,
-            Message = message
-        }) { StatusCode = statusCode };
-
-
+    {
+        ErrorType.Validation   => StatusCodes.Status400BadRequest,
+        ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+        ErrorType.Forbidden    => StatusCodes.Status403Forbidden,
+        ErrorType.NotFound     => StatusCodes.Status404NotFound,
+        ErrorType.Conflict     => StatusCodes.Status409Conflict,
+        _                      => StatusCodes.Status500InternalServerError
+    };
 }

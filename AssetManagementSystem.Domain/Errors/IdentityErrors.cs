@@ -33,4 +33,7 @@ public static class IdentityErrors
     code: "Identity.InvalidPasswordResetToken",
     description: "The password reset link is invalid or has expired.");
 
+    public static Error NoUsersFound => Error.NotFound(
+        code: "Identity.NoUsersFound",
+        description: "No users found in the system.");
 }

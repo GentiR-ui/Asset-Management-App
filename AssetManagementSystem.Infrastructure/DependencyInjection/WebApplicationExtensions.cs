@@ -7,6 +7,6 @@ public static class WebApplicationExtensions
 {
     public static async Task SeedDatabaseAsync(this WebApplication app)
     {
-        await DatabaseSeeder.SeedRolesAsync(app.Services);
+        await DatabaseSeeder.SeedAsync(app.Services);
     }
 }

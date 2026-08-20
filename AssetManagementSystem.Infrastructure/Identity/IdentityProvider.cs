@@ -128,6 +128,25 @@ public class IdentityProvider : IIdentityProvider
             .ToList();
     }
 
+    public async Task<ErrorOr<Success>> ChangePasswordAsync(User user, string currentPassword, string newPassword)
+    {
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+
+        if (result.Succeeded)
+        {
+            return Result.Success;
+        }
+
+        return result.Errors
+            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .DistinctBy(error => error.Code)
+            .ToList();
+    }
+
+    public async Task<User?> FindByIdAsync(Guid userId) => await _userManager.FindByIdAsync(userId.ToString());
+
+ 
+
 
 
 }

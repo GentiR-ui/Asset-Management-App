@@ -22,5 +22,7 @@ public interface IIdentityProvider
     Task<User?> FindByEmailAsync(string email);
     Task<string> GeneratePasswordResetTokenAsync(User user);
     Task<ErrorOr<Success>> ResetPasswordAsync(User user, string token, string newPassword);
+    Task<ErrorOr<Success>> ChangePasswordAsync(User user, string currentPassword, string newPassword);
+    Task<User?> FindByIdAsync(Guid userId);
 
 }

@@ -2,7 +2,6 @@
 using AssetManagementSystem.Application.DTOs.Auth;
 using AssetManagementSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace AssetManagementSystem.API.Controllers;
@@ -61,13 +60,7 @@ public sealed class AuthController : ApiControllerBase
         Problem);
     }
 
-    [HttpGet("me")]
-    public IActionResult Me() => Success(new
-    {
-        UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-        Email  = User.FindFirstValue(ClaimTypes.Email),
-        Roles  = User.FindAll(ClaimTypes.Role).Select(claim => claim.Value)
-    });
+    
 
     [AllowAnonymous]
     [HttpPost("forgot-password")]
