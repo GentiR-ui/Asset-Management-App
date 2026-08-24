@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Common.Mappings;
 using AssetManagementSystem.Application.DTOs.Auth;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
@@ -67,15 +68,7 @@ public class AuthService : IAuthService
         var roles = await _identityProvider.GetRolesAsync(user);
         var accessToken = _tokenService.GenerateToken(user,roles);
 
-        return new AuthResponse
-        {
-            UserId = user.Id,
-            Email = user.Email ?? string.Empty,
-            FullName = $"{user.FirstName} {user.LastName}",
-            Token = accessToken.Value,
-            ExpiresAtUtc = accessToken.ExpiresAtUtc,
-            Roles = roles.ToList()
-        };
+        return user.ToAuthResponse(accessToken, roles);
     }
 
     public async Task<ErrorOr<Success>> ConfirmEmailAsync(ConfirmEmailRequest request)

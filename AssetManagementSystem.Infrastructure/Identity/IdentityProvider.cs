@@ -3,6 +3,7 @@ using AssetManagementSystem.Domain.Errors;
 using AssetManagementSystem.Domain.Interfaces;
 using ErrorOr;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace AssetManagementSystem.Infrastructure.Identity;
 
@@ -50,8 +51,7 @@ public class IdentityProvider : IIdentityProvider
     {
         var user = await _userManager.FindByEmailAsync(email);
 
-        // Nëse useri s'ekziston kthejmë TË NJËJTIN gabim si për password gabim.
-        // Ndryshe dikush mund t'i provojë email-at një nga një dhe të mësojë cilët ekzistojnë.
+        
         if (user is null)
         {
             return IdentityErrors.InvalidCredentials;
@@ -145,7 +145,67 @@ public class IdentityProvider : IIdentityProvider
 
     public async Task<User?> FindByIdAsync(Guid userId) => await _userManager.FindByIdAsync(userId.ToString());
 
- 
+    public async Task<IReadOnlyList<User>> GetUsersAsync() =>
+        await _userManager.Users.ToListAsync();
+
+
+    public async Task<ErrorOr<Success>> AssignRoleAsync(User user, string roleName)
+    {
+        var result = await _userManager.AddToRoleAsync(user, roleName);
+
+        if (result.Succeeded)
+            return Result.Success;
+
+        return result.Errors
+            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .DistinctBy(error => error.Code)
+            .ToList();
+    }
+
+    public async Task<ErrorOr<Success>> RemoveRoleAsync(User user, string roleName)
+    {
+        var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+
+        if (result.Succeeded)
+            return Result.Success;
+
+        return result.Errors
+            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .DistinctBy(error => error.Code)
+            .ToList();
+    }
+
+    public async Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName, string email)
+    {
+        user.FirstName = firstName;
+        user.LastName = lastName;
+        user.Email = email;
+        user.UserName = email;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+            return Result.Success;
+
+        return result.Errors
+            .Select(identityError => MapIdentityError(identityError, email))
+            .DistinctBy(error => error.Code)
+            .ToList();
+    }
+
+    public async Task<ErrorOr<Success>> DeleteUserAsync(User user)
+    {
+        var result = await _userManager.DeleteAsync(user);
+
+        if (result.Succeeded)
+            return Result.Success;
+
+        return result.Errors
+            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .DistinctBy(error => error.Code)
+            .ToList();
+    }
+
 
 
 

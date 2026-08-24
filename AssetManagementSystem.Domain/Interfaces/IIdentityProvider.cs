@@ -24,5 +24,11 @@ public interface IIdentityProvider
     Task<ErrorOr<Success>> ResetPasswordAsync(User user, string token, string newPassword);
     Task<ErrorOr<Success>> ChangePasswordAsync(User user, string currentPassword, string newPassword);
     Task<User?> FindByIdAsync(Guid userId);
-
+    Task<IReadOnlyList<User>> GetUsersAsync();
+    Task<ErrorOr<Success>> AssignRoleAsync(User user, string roleName);
+    Task<ErrorOr<Success>> RemoveRoleAsync(User user, string roleName);
+    Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName, string email);
+    Task<ErrorOr<Success>> DeleteUserAsync(User user);
+    
+    
 }
