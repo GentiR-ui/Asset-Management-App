@@ -156,8 +156,11 @@ public class IdentityProvider : IIdentityProvider
         if (result.Succeeded)
             return Result.Success;
 
+        // "E ka veç atë rol" nuk është gabim formati — është përplasje gjendjeje → 409.
         return result.Errors
-            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .Select(identityError => identityError.Code is "UserAlreadyInRole"
+                ? IdentityErrors.UserAlreadyInRole(identityError.Description)
+                : IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
             .DistinctBy(error => error.Code)
             .ToList();
     }
@@ -170,17 +173,17 @@ public class IdentityProvider : IIdentityProvider
             return Result.Success;
 
         return result.Errors
-            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
+            .Select(identityError => identityError.Code is "UserNotInRole"
+                ? IdentityErrors.UserNotInRole(identityError.Description)
+                : IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
             .DistinctBy(error => error.Code)
             .ToList();
     }
 
-    public async Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName, string email)
+    public async Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName)
     {
         user.FirstName = firstName;
         user.LastName = lastName;
-        user.Email = email;
-        user.UserName = email;
 
         var result = await _userManager.UpdateAsync(user);
 
@@ -188,7 +191,7 @@ public class IdentityProvider : IIdentityProvider
             return Result.Success;
 
         return result.Errors
-            .Select(identityError => MapIdentityError(identityError, email))
+            .Select(identityError => IdentityErrors.FromIdentity(identityError.Code, identityError.Description))
             .DistinctBy(error => error.Code)
             .ToList();
     }
@@ -209,4 +212,10 @@ public class IdentityProvider : IIdentityProvider
 
 
 
+
+    public async Task<int> CountUsersInRoleAsync(string roleName)
+    {
+        var usersInRole = await _userManager.GetUsersInRoleAsync(roleName);
+        return usersInRole.Count;
+    }
 }

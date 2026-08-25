@@ -2,7 +2,7 @@ namespace AssetManagementSystem.Application.DTOs.Users;
 
 public sealed record UpdateUserRequest
 {
-    public required string FirstName { get; init; }
-    public required string LastName { get; init; }
-    public required string Email { get; init; }
+    public string FirstName { get; init; } = string.Empty;
+
+    public string LastName { get; init; } = string.Empty;
 }

@@ -2,7 +2,7 @@ namespace AssetManagementSystem.Application.DTOs.Account;
 
 public sealed record ChangePasswordRequest
 {
-    public required string CurrentPassword { get; init; }
+    public string CurrentPassword { get; init; } = string.Empty;
 
-    public required string NewPassword { get; init; }
+    public string NewPassword { get; init; } = string.Empty;
 }

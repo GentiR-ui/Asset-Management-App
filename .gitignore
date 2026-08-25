@@ -1,0 +1,19 @@
+# Artefaktet e build-it
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Postman
+postman/
+
+# Sekrete
+appsettings.*.local.json
+*.pfx

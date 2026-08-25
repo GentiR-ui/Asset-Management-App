@@ -1,3 +1,4 @@
+using AssetManagementSystem.Domain.Common;
 using AssetManagementSystem.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -15,6 +16,8 @@ public class ApplicationDbContext
         
     }
 
+    public DbSet<Asset> Assets => Set<Asset>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -25,5 +28,35 @@ public class ApplicationDbContext
         builder.Entity<IdentityUserClaim<Guid>>(b => b.ToTable("UserClaims"));
 
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        
     }
+   
+
+   public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyAuditFields();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyAuditFields()
+    {
+        var now = DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Property(nameof(BaseEntity.CreatedAt)).CurrentValue = now;
+                    break;
+
+                case EntityState.Modified:
+                    entry.Property(nameof(BaseEntity.CreatedAt)).IsModified = false;
+                    entry.Property(nameof(BaseEntity.UpdatedAt)).CurrentValue = now;
+                    break;
+            }
+        }
+    }
+
+
 }

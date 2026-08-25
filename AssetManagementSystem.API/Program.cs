@@ -14,7 +14,11 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
     options.Filters.Add<ExceptionFilter>();
-});
+})
+// Enum-et udhetojne si EMRA, jo numra: { "category": "Laptop" } ne vend te { "category": 0 }
+.AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter()));
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

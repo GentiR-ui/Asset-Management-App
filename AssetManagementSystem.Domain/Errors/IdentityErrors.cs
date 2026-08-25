@@ -36,4 +36,17 @@ public static class IdentityErrors
     public static Error NoUsersFound => Error.NotFound(
         code: "Identity.NoUsersFound",
         description: "No users found in the system.");
+
+    /// <summary>
+    /// Useri e ka veç atë rol. Kërkesa është e vlefshme — thjesht përplaset me gjendjen,
+    /// prandaj Conflict (409) e jo Validation (400).
+    /// </summary>
+    public static Error UserAlreadyInRole(string description) => Error.Conflict(
+        code: "Identity.UserAlreadyInRole",
+        description: description);
+
+    /// <summary>Useri nuk e ka atë rol, pra s'ka çka të hiqet.</summary>
+    public static Error UserNotInRole(string description) => Error.Conflict(
+        code: "Identity.UserNotInRole",
+        description: description);
 }

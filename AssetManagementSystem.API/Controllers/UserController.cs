@@ -1,11 +1,12 @@
 using AssetManagementSystem.Application.DTOs.Users;
 using AssetManagementSystem.Application.Interfaces;
+using AssetManagementSystem.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssetManagementSystem.API.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = AppRoles.Admin)]
 [Route("api/users")]
 public sealed class UserController : ApiControllerBase
 {
@@ -20,7 +21,7 @@ public sealed class UserController : ApiControllerBase
     public async Task<IActionResult> GetUsers()
     {
         var users = await _userService.GetUsersAsync();
-        return Ok(users);
+        return Success(users);
     }
 
     [HttpPost("{userId:guid}/roles")]

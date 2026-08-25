@@ -27,8 +27,11 @@ public interface IIdentityProvider
     Task<IReadOnlyList<User>> GetUsersAsync();
     Task<ErrorOr<Success>> AssignRoleAsync(User user, string roleName);
     Task<ErrorOr<Success>> RemoveRoleAsync(User user, string roleName);
-    Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName, string email);
+    Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName);
     Task<ErrorOr<Success>> DeleteUserAsync(User user);
+
+    /// <summary>Sa userë e kanë këtë rol — na duhet për të mbrojtur Adminin e fundit.</summary>
+    Task<int> CountUsersInRoleAsync(string roleName);
     
     
 }

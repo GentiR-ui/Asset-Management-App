@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
         services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAssetService, AssetService>();
 
         return services;
         
