@@ -17,6 +17,7 @@ public class ApplicationDbContext
     }
 
     public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<Department> Departments => Set<Department>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -40,19 +41,18 @@ public class ApplicationDbContext
 
     private void ApplyAuditFields()
     {
-        var now = DateTime.UtcNow;
 
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Property(nameof(BaseEntity.CreatedAt)).CurrentValue = now;
+                    entry.Property(nameof(BaseEntity.CreatedAt)).CurrentValue = DateTime.UtcNow;
                     break;
 
                 case EntityState.Modified:
-                    entry.Property(nameof(BaseEntity.CreatedAt)).IsModified = false;
-                    entry.Property(nameof(BaseEntity.UpdatedAt)).CurrentValue = now;
+                    entry.Property(nameof(BaseEntity.CreatedAt)).IsModified = true;
+                    entry.Property(nameof(BaseEntity.UpdatedAt)).CurrentValue = DateTime.UtcNow;
                     break;
             }
         }

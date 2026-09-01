@@ -2,6 +2,7 @@ using AssetManagementSystem.Application.DTOs.Assets;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
 using AssetManagementSystem.Domain.Entities;
+using AssetManagementSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,15 +25,10 @@ public sealed class AssetsController : ApiControllerBase
     {
         var result = await _assetService.CreateAsync(request, cancellationToken);
 
-        return result.Match(
-            asset => Success(asset, StatusCodes.Status201Created),
-            Problem);
+        return HandleResult(result, StatusCodes.Status201Created);
     }
 
-    /// <summary>
-    /// Lista e kategorive te lejuara — frontend-i e perdor per te mbushur dropdown-in.
-    /// Pa kete, klienti do te duhej t'i dinte vlerat perm endsh.
-    /// </summary>
+    
     [HttpGet("categories")]
     public IActionResult GetCategories() => Success(Enum.GetNames<AssetCategory>());
 
@@ -45,9 +41,7 @@ public sealed class AssetsController : ApiControllerBase
     {
         var result = await _assetService.GetByIdAsync(id, cancellationToken);
 
-        return result.Match(
-            asset => Success(asset),
-            Problem);
+        return HandleResult(result);
     }
 
     [HttpGet]
@@ -64,9 +58,7 @@ public sealed class AssetsController : ApiControllerBase
     {
         var result = await _assetService.UpdateAsync(id, request, cancellationToken);
 
-        return result.Match(
-            asset => Success(asset),
-            Problem);
+        return HandleResult(result);
     }
 
     [Authorize(Roles = AppRoles.Admin)]
@@ -75,9 +67,7 @@ public sealed class AssetsController : ApiControllerBase
     {
         var result = await _assetService.DeleteAsync(id, cancellationToken);
 
-        return result.Match(
-            _ => Success("Asset deleted successfully."),
-            Problem);
+        return HandleResult(result, "Asset deleted successfully.");
     }
 
 

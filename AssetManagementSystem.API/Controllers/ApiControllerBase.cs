@@ -30,6 +30,14 @@ public abstract class ApiControllerBase : ControllerBase
         })
         { StatusCode = statusCode };
 
+    
+    protected IActionResult HandleResult<T>(ErrorOr<T> result, int statusCode = StatusCodes.Status200OK) =>
+        result.Match(value => Success(value, statusCode), Problem);
+
+    
+    protected IActionResult HandleResult(ErrorOr<Success> result, string successMessage) =>
+        result.Match<IActionResult>(_ => Success(successMessage), Problem);
+
     protected IActionResult Problem(List<Error> errors)
     {
         if (errors.Count is 0)

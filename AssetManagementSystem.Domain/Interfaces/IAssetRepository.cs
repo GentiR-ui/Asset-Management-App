@@ -14,9 +14,7 @@ public interface IAssetRepository
 
     Task AddAsync(Asset asset, CancellationToken cancellationToken = default);
 
-    void Update(Asset asset);
-
-    Task SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task UpdateAsync(Asset asset, CancellationToken cancellationToken = default);
 
     Task RemoveAsync(Asset asset, CancellationToken cancellationToken = default);
 }

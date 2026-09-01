@@ -15,7 +15,7 @@ public sealed class CreateAssetRequestValidator : AbstractValidator<CreateAssetR
             .NotEmpty().WithMessage("Asset name is required.")
             .MaximumLength(200).WithMessage("Asset name cannot exceed 200 characters.");
 
-        // IsInEnum kap vlerat qe s'ekzistojne — p.sh. nese klienti dergon 99999.
+        
         RuleFor(request => request.Category)
             .IsInEnum().WithMessage("Category is not a valid value.");
 
@@ -31,7 +31,7 @@ public sealed class CreateAssetRequestValidator : AbstractValidator<CreateAssetR
         RuleFor(request => request.PurchasePrice)
             .GreaterThanOrEqualTo(0).WithMessage("Purchase price cannot be negative.");
 
-        // Garancia duhet te jete PAS blerjes — perndryshe te dhena te pakuptimta.
+        
         RuleFor(request => request.WarrantyExpiryDate)
             .GreaterThan(request => request.PurchaseDate)
             .When(request => request.WarrantyExpiryDate.HasValue)

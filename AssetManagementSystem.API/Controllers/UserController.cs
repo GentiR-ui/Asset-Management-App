@@ -29,9 +29,7 @@ public sealed class UserController : ApiControllerBase
     {
         var result = await _userService.AssignRoleAsync(userId, request);
 
-        return result.Match(
-            _ => Success("Role assigned successfully."),
-            Problem);
+        return HandleResult(result, "Role assigned successfully.");
     }
 
     [HttpDelete("{userId:guid}/roles/{roleName}")]  
@@ -39,9 +37,7 @@ public sealed class UserController : ApiControllerBase
     {
         var result = await _userService.RemoveRoleAsync(userId, roleName);
 
-        return result.Match(
-            _ => Success("Role removed successfully."),
-            Problem);
+        return HandleResult(result, "Role removed successfully.");
     }
 
     [HttpPut("{userId:guid}")]
@@ -49,9 +45,7 @@ public sealed class UserController : ApiControllerBase
     {
         var result = await _userService.UpdateUserAsync(userId, request);
 
-        return result.Match(
-            _ => Success("User updated successfully."),
-            Problem);
+        return HandleResult(result, "User updated successfully.");
     }
 
     [HttpDelete("{userId:guid}")]
@@ -59,8 +53,6 @@ public sealed class UserController : ApiControllerBase
     {
         var result = await _userService.DeleteUserAsync(userId);
 
-        return result.Match(
-            _ => Success("User deleted successfully."),
-            Problem);
+        return HandleResult(result, "User deleted successfully.");
     }
 }

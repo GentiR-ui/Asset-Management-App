@@ -1,4 +1,5 @@
 using AssetManagementSystem.Domain.Common;
+using AssetManagementSystem.Domain.Enums;
 
 namespace AssetManagementSystem.Domain.Entities;
 
@@ -21,25 +22,9 @@ public class Asset : BaseEntity
     public DateTime? WarrantyExpiryDate { get; set; }
 
     public string? Notes { get; set; }
+
+    public bool? AssignedToEmployee { get; set; } 
 }
 
-public enum AssetStatus
-{
-    InStock = 0,
-    Assigned = 1,
-    InRepair = 2,
-    Retired = 3
-}
 
-public enum AssetCategory
-{
-    Laptop = 0,
-    Desktop = 1,
-    Monitor = 2,
-    Phone = 3,
-    Tablet = 4,
-    Printer = 5,
-    NetworkDevice = 6,
-    Furniture = 7,
-    Other = 99
-}
+

@@ -22,9 +22,7 @@ public sealed class AuthController : ApiControllerBase
     {
         var result = await _authService.RegisterAsync(request);
 
-        return result.Match<IActionResult>(
-        _ => Success("Operation completed successfully."),
-        Problem);
+        return HandleResult(result, "Operation completed successfully.");
     }
 
     [AllowAnonymous]
@@ -33,9 +31,7 @@ public sealed class AuthController : ApiControllerBase
     {
         var result = await _authService.LoginAsync(request);
 
-        return result.Match(
-        response => Success(response),
-        Problem);
+        return HandleResult(result);
     }
 
     [AllowAnonymous]
@@ -44,9 +40,7 @@ public sealed class AuthController : ApiControllerBase
     {
         var result = await _authService.ConfirmEmailAsync(request);
 
-        return result.Match<IActionResult>(
-        _ => Success("Email confirmed successfully. You can now sign in."),
-        Problem);
+        return HandleResult(result, "Email confirmed successfully. You can now sign in.");
     }
 
     [AllowAnonymous]
@@ -55,9 +49,7 @@ public sealed class AuthController : ApiControllerBase
     {
         var result = await _authService.ResendConfirmationAsync(request);
 
-        return result.Match<IActionResult>(
-        _ => Success("If that email is registered and not yet confirmed, a confirmation link has been sent."),
-        Problem);
+        return HandleResult(result, "If that email is registered and not yet confirmed, a confirmation link has been sent.");
     }
 
     
@@ -67,9 +59,7 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
     {
         var result = await _authService.ForgotPasswordAsync(request);
-        return result.Match<IActionResult>(
-        _ => Success("If that email is registered, a password reset link has been sent."),
-        Problem);
+        return HandleResult(result, "If that email is registered, a password reset link has been sent.");
     }
 
     [AllowAnonymous]
@@ -77,9 +67,7 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
     {
         var result = await _authService.ResetPasswordAsync(request);
-        return result.Match<IActionResult>(
-        _ => Success("Password has been reset. You can now sign in with your new password."),
-        Problem);
+        return HandleResult(result, "Password has been reset. You can now sign in with your new password.");
     }
 
     [Authorize]

@@ -4,6 +4,7 @@ using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Errors;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Domain.Enums;
 using ErrorOr;
 
 namespace AssetManagementSystem.Application.Services;
@@ -40,7 +41,7 @@ public sealed class AssetService : IAssetService
             Name = request.Name.Trim(),
             Category = request.Category,
             SerialNumber = serialNumber,
-            // Cdo aset i ri hyn ne inventar — nuk mund te krijohet i caktuar.
+            
             Status = AssetStatus.InStock,
             PurchaseDate = request.PurchaseDate,
             PurchasePrice = request.PurchasePrice,
@@ -49,7 +50,6 @@ public sealed class AssetService : IAssetService
         };
 
         await _assetRepository.AddAsync(asset, cancellationToken);
-        await _assetRepository.SaveChangesAsync(cancellationToken);
 
         return asset.ToAssetResponse();
     }
@@ -65,7 +65,7 @@ public sealed class AssetService : IAssetService
             : asset.ToAssetResponse();
     }
 
-    // Pa ErrorOr: nje liste boshe eshte pergjigje e vlefshme, jo gabim.
+    
     public async Task<IReadOnlyList<AssetResponse>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {
@@ -89,8 +89,6 @@ public sealed class AssetService : IAssetService
         var assetTag = request.AssetTag.Trim();
         var serialNumber = request.SerialNumber.Trim();
 
-        // Kontrollo unicitetin VETEM nese vlera ndryshoi — perndryshe do te
-        // perplasej me vetveten dhe cdo ruajtje pa ndryshim do te deshtonte.
         if (!string.Equals(asset.AssetTag, assetTag, StringComparison.OrdinalIgnoreCase)
             && await _assetRepository.AssetTagExistsAsync(assetTag, cancellationToken))
         {
@@ -113,8 +111,7 @@ public sealed class AssetService : IAssetService
         asset.WarrantyExpiryDate = request.WarrantyExpiryDate;
         asset.Notes = request.Notes;
 
-        _assetRepository.Update(asset);
-        await _assetRepository.SaveChangesAsync(cancellationToken);
+        await _assetRepository.UpdateAsync(asset, cancellationToken);
 
         return asset.ToAssetResponse();
     }
@@ -130,10 +127,8 @@ public sealed class AssetService : IAssetService
             return AssetErrors.NotFound(id);
         }
 
-        // TODO: fshirje e VERTETE. Kur asetet te lidhen me punonjes (java 5),
-        // kjo do te prishe lidhjet ose do te lere jetime. Pyetje per mentorin.
+        
         await _assetRepository.RemoveAsync(asset, cancellationToken);
-        await _assetRepository.SaveChangesAsync(cancellationToken);
 
         return Result.Success;
     }

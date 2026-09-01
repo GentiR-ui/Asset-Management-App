@@ -33,8 +33,6 @@ public sealed class AccountController : ApiControllerBase
         
         var result = await _accountService.ChangePasswordAsync(CurrentUserId, request);
 
-        return result.Match<IActionResult>(
-        _ => Success("Password changed successfully."),
-        Problem);
+        return HandleResult(result, "Password changed successfully.");
     }
 }
