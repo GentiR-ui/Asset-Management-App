@@ -17,4 +17,6 @@ public interface IAssetRepository
     Task UpdateAsync(Asset asset, CancellationToken cancellationToken = default);
 
     Task RemoveAsync(Asset asset, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAssetsAssignedToEmployeeAsync(Guid employeeId, CancellationToken cancellationToken = default);
 }

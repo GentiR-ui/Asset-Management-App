@@ -23,7 +23,9 @@ public class Asset : BaseEntity
 
     public string? Notes { get; set; }
 
-    public bool? AssignedToEmployee { get; set; } 
+    public Guid? AssignedToEmployeeId { get; set; }
+    public Employee? AssignedToEmployee { get; set; }
+
 }
 
 

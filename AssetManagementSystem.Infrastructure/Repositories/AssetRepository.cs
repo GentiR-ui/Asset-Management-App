@@ -46,5 +46,11 @@ public sealed class AssetRepository : IAssetRepository
     {
         _context.Assets.Remove(asset);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> HasAssetsAssignedToEmployeeAsync(Guid employeeId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Assets
+            .AnyAsync(a => a.AssignedToEmployeeId == employeeId, cancellationToken);
     }    
 }

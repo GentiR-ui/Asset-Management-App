@@ -19,4 +19,10 @@ public static class DepartmentErrors
     public static Error CodeAlreadyExists(string departmentCode) => Error.Conflict(
         code: "Department.CodeAlreadyExists",
         description: $"A department with code '{departmentCode}' already exists.");        
+
+
+    /// <summary>Mbron FK_Employees_Departments_DepartmentId (Restrict).</summary>
+    public static Error CannotDeleteWithEmployees(Guid departmentId) => Error.Conflict(
+        code: "Department.CannotDeleteWithEmployees",
+        description: $"Department '{departmentId}' still has employees. Reassign or delete them first.");
 }

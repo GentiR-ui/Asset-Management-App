@@ -43,5 +43,13 @@ public sealed class AssetConfiguration : IEntityTypeConfiguration<Asset>
         
         builder.HasIndex(asset => asset.Status);
         builder.HasIndex(asset => asset.Category);
+
+        builder.HasOne(asset => asset.AssignedToEmployee)
+        .WithMany()
+        .HasForeignKey(asset => asset.AssignedToEmployeeId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        
+
     }
 }

@@ -18,6 +18,7 @@ public class ApplicationDbContext
 
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Employee> Employees => Set<Employee>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

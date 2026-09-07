@@ -19,4 +19,9 @@ public static class UserErrors
     public static Error CannotDeleteLastAdmin => Error.Conflict(
         code: "User.CannotDeleteLastAdmin",
         description: "Cannot delete the last administrator. Assign the Admin role to another user first.");
+
+    /// <summary>Mbron FK_Employees_Users_UserId (Restrict).</summary>
+    public static Error CannotDeleteLinkedToEmployee => Error.Conflict(
+        code: "User.CannotDeleteLinkedToEmployee",
+        description: "This user is linked to an employee record. Delete the employee first.");
 }

@@ -39,6 +39,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIdentityProvider, IdentityProvider>();
         services.AddScoped<IAssetRepository, AssetRepository>();
         services.AddScoped<IEmailSender, LoggingEmailSender>();
+        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
         
 
         return services;

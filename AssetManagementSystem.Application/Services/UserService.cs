@@ -11,10 +11,12 @@ namespace AssetManagementSystem.Application.Services;
 public class UserService : IUserService
 {
     private readonly IIdentityProvider _identityProvider;
+    private readonly IEmployeeRepository _employeeRepository;
 
-    public UserService(IIdentityProvider identityProvider)
+    public UserService(IIdentityProvider identityProvider, IEmployeeRepository employeeRepository)
     {
         _identityProvider = identityProvider;
+        _employeeRepository = employeeRepository;
     }
 
     public async Task<IReadOnlyList<UserResponse>> GetUsersAsync()
@@ -86,6 +88,13 @@ public class UserService : IUserService
         if (await IsLastAdminAsync(user, AppRoles.Admin))
         {
             return UserErrors.CannotDeleteLastAdmin;
+        }
+
+        // FK_Employees_Users_UserId eshte Restrict: pa kete kontroll, SQL-i e refuzon
+        // fshirjen dhe perdoruesi merr 500 ne vend te nje mesazhi te kuptueshem.
+        if (await _employeeRepository.IsUserLinkedAsync(userId))
+        {
+            return UserErrors.CannotDeleteLinkedToEmployee;
         }
 
         return await _identityProvider.DeleteUserAsync(user);

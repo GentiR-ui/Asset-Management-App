@@ -41,13 +41,13 @@ public class DepartmentRepository : IDepartmentRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> NameExistsAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<bool> NameExistsAsync(string name, Guid? excludeId, CancellationToken cancellationToken = default)
     {
-        return await _context.Departments.AnyAsync(d => d.Name == name, cancellationToken);
+        return await _context.Departments.AnyAsync(d => d.Name == name && (excludeId == null || d.Id != excludeId), cancellationToken);
     }
 
-    public async Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default)
+    public async Task<bool> CodeExistsAsync(string code,Guid? excludeId, CancellationToken cancellationToken = default)
     {
-        return await _context.Departments.AnyAsync(d => d.Code == code, cancellationToken);
+        return await _context.Departments.AnyAsync(d => d.Code == code && (excludeId == null || d.Id != excludeId), cancellationToken);
     }
 }
