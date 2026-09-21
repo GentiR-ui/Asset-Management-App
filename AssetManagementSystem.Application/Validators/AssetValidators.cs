@@ -41,3 +41,14 @@ public sealed class CreateAssetRequestValidator : AbstractValidator<CreateAssetR
             .MaximumLength(1000).WithMessage("Notes cannot exceed 1000 characters.");
     }
 }
+
+public sealed class AssignAssetRequestValidator : AbstractValidator<AssignAssetRequest>
+{
+    public AssignAssetRequestValidator()
+    {
+        // NotEmpty mbi nje Guid do te thote: jo Guid.Empty.
+        // Pa kete, mungesa e fushes do te kthente 404 per nje ID qe klienti kurre nuk e dergoi.
+        RuleFor(request => request.EmployeeId)
+            .NotEmpty().WithMessage("Employee id is required.");
+    }
+}

@@ -9,7 +9,8 @@ public interface IIdentityProvider
         string firstName,
         string lastName,
         string email,
-        string password);
+        string password,
+        bool emailConfirmed = false);
 
     Task<ErrorOr<User>> ValidateCredentialsAsync(string email, string password);
 

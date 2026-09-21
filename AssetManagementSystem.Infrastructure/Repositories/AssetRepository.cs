@@ -17,8 +17,20 @@ public sealed class AssetRepository : IAssetRepository
         await _context.Assets.FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
 
     
+    // Me Include dhe pa gjurmim: vetem per lexim.
+    public async Task<Asset?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await _context.Assets
+            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
+            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
+
     public async Task<IReadOnlyList<Asset>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        await _context.Assets.AsNoTracking().ToListAsync(cancellationToken);
+        await _context.Assets
+            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
+            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
     public async Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default) =>
        await _context.Assets.AnyAsync(asset => asset.AssetTag == assetTag, cancellationToken);

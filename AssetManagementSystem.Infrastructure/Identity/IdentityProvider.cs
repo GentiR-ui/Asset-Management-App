@@ -24,14 +24,16 @@ public class IdentityProvider : IIdentityProvider
         string firstName,
         string lastName,
         string email,
-        string password)
+        string password,
+        bool emailConfirmed = false)
     {
         var user = new User
         {
             FirstName = firstName,
             LastName = lastName,
             Email = email,
-            UserName = email
+            UserName = email,
+            EmailConfirmed = emailConfirmed
         };
 
         var result = await _userManager.CreateAsync(user, password);

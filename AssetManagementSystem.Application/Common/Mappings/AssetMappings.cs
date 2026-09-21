@@ -20,6 +20,13 @@ public static class AssetMappings
         IsUnderWarranty = asset.WarrantyExpiryDate.HasValue
                           && asset.WarrantyExpiryDate.Value.Date >= DateTime.UtcNow.Date,
         Notes = asset.Notes,
+        AssignedToEmployeeId = asset.AssignedToEmployeeId,
+        // ?. sepse nje aset i lire s'ka punonjes, dhe nje aset i ngarkuar pa Include
+        // e ka navigimin null edhe kur AssignedToEmployeeId eshte i vendosur.
+        AssignedToEmployeeName = asset.AssignedToEmployee is null
+            ? null
+            : $"{asset.AssignedToEmployee.User.FirstName} {asset.AssignedToEmployee.User.LastName}",
+        AssignedToDepartmentName = asset.AssignedToEmployee?.Department.Name,
         CreatedAt = asset.CreatedAt
     };
 }

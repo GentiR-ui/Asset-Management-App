@@ -17,6 +17,14 @@ public sealed class UserController : ApiControllerBase
         _userService = userService;
     }
 
+    [HttpPost]
+    public async Task<IActionResult> CreateUser(CreateUserRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _userService.CreateUserAsync(request, cancellationToken);
+
+        return HandleResult(result, StatusCodes.Status201Created);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {

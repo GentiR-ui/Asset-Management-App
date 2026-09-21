@@ -16,6 +16,14 @@ public static class AssetErrors
         code: "Asset.SerialNumberAlreadyExists",
         description: $"An asset with serial number '{serialNumber}' already exists.");
 
-   
+    public static ErrorOr<Success> AlreadyAssigned(Guid assetId, Guid employeeId) => Error.Conflict(
+        code: "Asset.AlreadyAssigned",
+        description: $"Asset with ID '{assetId}' is already assigned to employee with ID '{employeeId}'.");
+
+    public static Error NotAssigned(Guid assetId) => Error.Conflict(
+        code: "Asset.NotAssigned",
+        description: $"Asset with ID '{assetId}' is not assigned to any employee.");    
+        
+    
 
 }

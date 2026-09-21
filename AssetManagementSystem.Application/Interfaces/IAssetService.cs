@@ -10,5 +10,6 @@ public interface IAssetService
     Task<ErrorOr<AssetResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ErrorOr<AssetResponse>> UpdateAsync(Guid id, UpdateAssetRequest request, CancellationToken cancellationToken = default);
     Task<ErrorOr<Success>> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-
+    Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(Guid assetId, AssignAssetRequest request, CancellationToken cancellationToken = default);
+    Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(Guid assetId, CancellationToken cancellationToken = default);
 }

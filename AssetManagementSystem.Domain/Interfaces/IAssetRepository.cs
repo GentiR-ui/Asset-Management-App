@@ -6,6 +6,8 @@ public interface IAssetRepository
 {
     Task<Asset?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<Asset?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Asset>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default);

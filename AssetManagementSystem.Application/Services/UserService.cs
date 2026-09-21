@@ -2,6 +2,7 @@ using AssetManagementSystem.Application.Common.Mappings;
 using AssetManagementSystem.Application.DTOs.Users;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
+using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Errors;
 using AssetManagementSystem.Domain.Interfaces;
 using ErrorOr;
@@ -12,11 +13,72 @@ public class UserService : IUserService
 {
     private readonly IIdentityProvider _identityProvider;
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IDepartmentRepository _departmentRepository;
+    private readonly IAssetRepository _assetRepository;
+    private readonly ITransactionRunner _transactionRunner;
 
-    public UserService(IIdentityProvider identityProvider, IEmployeeRepository employeeRepository)
+    public UserService(IIdentityProvider identityProvider, IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository, IAssetRepository assetRepository, ITransactionRunner transactionRunner)
     {
         _identityProvider = identityProvider;
         _employeeRepository = employeeRepository;
+        _departmentRepository = departmentRepository;
+        _assetRepository = assetRepository;
+        _transactionRunner = transactionRunner;
+    }
+
+    public async Task<ErrorOr<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
+    {
+        // Liste e qarte, jo "gjithcka pervec Admin": ajo forme prishet sa here shtohet nje rol i ri.
+        var needsEmployee = AppRoles.Staff.Contains(request.Role);
+        var employeeCode = request.EmployeeCode?.Trim();
+
+        // Kontrolle paraprake: japin mesazh te qarte para se te hapet transaksioni.
+        if (needsEmployee)
+        {
+            if (await _departmentRepository.GetByIdAsync(request.DepartmentId!.Value, cancellationToken) is null)
+            {
+                return DepartmentErrors.NotFound(request.DepartmentId.Value);
+            }
+
+            if (await _employeeRepository.EmployeeCodeExistsAsync(employeeCode!, null, cancellationToken))
+            {
+                return EmployeeErrors.EmployeeCodeAlreadyExists(employeeCode!);
+            }
+        }
+
+        // Dy shkrime ne dy tabela: ose te dyja, ose asnjera.
+        return await _transactionRunner.ExecuteAsync<UserResponse>(async () =>
+        {
+            var created = await _identityProvider.CreateUserAsync(
+                request.FirstName, request.LastName, request.Email, request.Password, emailConfirmed: true);
+
+            if (created.IsError)
+            {
+                return created.Errors;
+            }
+
+            var user = created.Value;
+
+            // AssignRoleAsync dhe jo AddToRoleAsync: kjo kthen ErrorOr, pra deshtimi shkakton rollback.
+            var roleResult = await _identityProvider.AssignRoleAsync(user, request.Role);
+
+            if (roleResult.IsError)
+            {
+                return roleResult.Errors;
+            }
+
+            if (needsEmployee)
+            {
+                await _employeeRepository.AddAsync(new Employee
+                {
+                    EmployeeCode = employeeCode!,
+                    UserId = user.Id,
+                    DepartmentId = request.DepartmentId!.Value
+                }, cancellationToken);
+            }
+
+            return user.ToUserResponse([request.Role]);
+        }, cancellationToken);
     }
 
     public async Task<IReadOnlyList<UserResponse>> GetUsersAsync()
@@ -63,6 +125,8 @@ public class UserService : IUserService
         return await _identityProvider.RemoveRoleAsync(user, roleName);
     }
 
+   
+
     public async Task<ErrorOr<Success>> UpdateUserAsync(Guid userId, UpdateUserRequest request)
     {
         var user = await _identityProvider.FindByIdAsync(userId);
@@ -79,25 +143,23 @@ public class UserService : IUserService
     public async Task<ErrorOr<Success>> DeleteUserAsync(Guid userId)
     {
         var user = await _identityProvider.FindByIdAsync(userId);
+        if (user is null) return UserErrors.NotFound(userId);
 
-        if (user is null)
+        if (await IsLastAdminAsync(user, AppRoles.Admin)) return UserErrors.CannotDeleteLastAdmin;
+
+        var employee = await _employeeRepository.GetByUserIdAsync(userId);
+
+        if (employee is not null && await _assetRepository.HasAssetsAssignedToEmployeeAsync(employee.Id))
+            return EmployeeErrors.CannotDeleteWithAssignedAssets(employee.Id);
+
+        return await _transactionRunner.ExecuteAsync<Success>(async () =>
         {
-            return UserErrors.NotFound(userId);
-        }
+            if (employee is not null)
+                await _employeeRepository.RemoveAsync(employee);     // I PARI — FK Restrict
 
-        if (await IsLastAdminAsync(user, AppRoles.Admin))
-        {
-            return UserErrors.CannotDeleteLastAdmin;
-        }
+            return await _identityProvider.DeleteUserAsync(user);
+        });
 
-        // FK_Employees_Users_UserId eshte Restrict: pa kete kontroll, SQL-i e refuzon
-        // fshirjen dhe perdoruesi merr 500 ne vend te nje mesazhi te kuptueshem.
-        if (await _employeeRepository.IsUserLinkedAsync(userId))
-        {
-            return UserErrors.CannotDeleteLinkedToEmployee;
-        }
-
-        return await _identityProvider.DeleteUserAsync(user);
     }
 
     /// <summary>

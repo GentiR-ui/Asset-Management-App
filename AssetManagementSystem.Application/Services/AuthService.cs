@@ -34,7 +34,8 @@ public class AuthService : IAuthService
         }
 
         var user = createResult.Value;
-        await _identityProvider.AddToRoleAsync(user, AppRoles.Employee);
+        // Vete-regjistrimi jep gjithmone rolin me te ulet. Stafin e krijon admini me POST /api/users.
+        await _identityProvider.AddToRoleAsync(user, AppRoles.Client);
 
 
         

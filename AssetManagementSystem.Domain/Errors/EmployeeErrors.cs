@@ -12,15 +12,6 @@ public static class EmployeeErrors
         code: "Employee.EmployeeCodeAlreadyExists",
         description: $"An employee with code '{employeeCode}' already exists.");
 
-    /// <summary>Mbron indeksin unik IX_Employees_UserId — nje llogari, nje punonjes.</summary>
-    public static Error UserAlreadyLinked(Guid userId) => Error.Conflict(
-        code: "Employee.UserAlreadyLinked",
-        description: $"The user '{userId}' is already linked to another employee.");
-
-    public static Error UserNotFound(Guid userId) => Error.NotFound(
-        code: "Employee.UserNotFound",
-        description: $"User with identifier '{userId}' was not found.");
-
     /// <summary>Mbron FK_Assets_Employees_AssignedToEmployeeId (Restrict).</summary>
     public static Error CannotDeleteWithAssignedAssets(Guid employeeId) => Error.Conflict(
         code: "Employee.CannotDeleteWithAssignedAssets",

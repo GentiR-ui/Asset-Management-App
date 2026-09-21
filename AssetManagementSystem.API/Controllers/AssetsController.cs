@@ -71,5 +71,26 @@ public sealed class AssetsController : ApiControllerBase
     }
 
 
+    [HttpPost("{assetId:guid}/assign")]
+    public async Task<IActionResult> AssignAssetToEmployee(
+        Guid assetId,
+        AssignAssetRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _assetService.AssignAssetToEmployeeAsync(assetId, request, cancellationToken);
+
+        return HandleResult(result, "Asset assigned to employee successfully.");
+    }
+
+    [HttpPost("{assetId:guid}/unassign")]
+    public async Task<IActionResult> UnassignAssetFromEmployee(
+        Guid assetId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _assetService.UnassignAssetFromEmployeeAsync(assetId, cancellationToken);
+
+        return HandleResult(result, "Asset unassigned from employee successfully.");
+    }
+
 
 }

@@ -18,14 +18,8 @@ public sealed class EmployeeController : ApiControllerBase
         _employeeService = employeeService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create(CreateEmployeeRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _employeeService.CreateEmployeeAsync(request, cancellationToken);
-
-        return HandleResult(result, StatusCodes.Status201Created);
-    }
-
+    // Punonjesi krijohet te POST /api/users dhe fshihet te DELETE /api/users/{id},
+    // gjithmone bashke me llogarine. Ketu mbeten vetem leximi dhe perditesimi.
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
@@ -52,14 +46,8 @@ public sealed class EmployeeController : ApiControllerBase
         return HandleResult(result);
     }
 
-    [Authorize(Roles = AppRoles.Admin)]
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
-    {
-        var result = await _employeeService.DeleteEmployeeAsync(id, cancellationToken);
-
-        return HandleResult(result, "Employee deleted successfully.");
-    }
+    // Fshirja behet nga DELETE /api/users/{id}: punonjesi dhe llogaria zhduken bashke,
+    // ne nje transaksion, qe te mos mbetet kurre user pa punonjes ose anasjelltas.
 
 
 

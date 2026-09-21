@@ -5,6 +5,8 @@ namespace AssetManagementSystem.Application.Interfaces;
 
 public interface IUserService
 {
+    Task<ErrorOr<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<UserResponse>> GetUsersAsync();
 
     Task<ErrorOr<Success>> AssignRoleAsync(Guid userId, AssignRoleRequest request);

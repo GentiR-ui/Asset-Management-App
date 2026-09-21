@@ -41,6 +41,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailSender, LoggingEmailSender>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<ITransactionRunner, TransactionRunner>();
+
 
         
 

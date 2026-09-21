@@ -12,10 +12,12 @@ namespace AssetManagementSystem.Application.Services;
 public sealed class AssetService : IAssetService
 {
     private readonly IAssetRepository _assetRepository;
+    private readonly IEmployeeRepository _employeeRepository;
 
-    public AssetService(IAssetRepository assetRepository)
+    public AssetService(IAssetRepository assetRepository, IEmployeeRepository employeeRepository)
     {
         _assetRepository = assetRepository;
+        _employeeRepository = employeeRepository;
     }
 
     public async Task<ErrorOr<AssetResponse>> CreateAsync(
@@ -58,7 +60,7 @@ public sealed class AssetService : IAssetService
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        var asset = await _assetRepository.GetByIdAsync(id, cancellationToken);
+        var asset = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
 
         return asset is null
             ? AssetErrors.NotFound(id)
@@ -113,7 +115,11 @@ public sealed class AssetService : IAssetService
 
         await _assetRepository.UpdateAsync(asset, cancellationToken);
 
-        return asset.ToAssetResponse();
+        // Rilexohet me Include: entiteti i mesiperm s'i ka navigimet e ngarkuara,
+        // dhe vendosja e tyre para Update() do t'i shenonte Employees e Users si te ndryshuar.
+        var updated = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
+
+        return updated!.ToAssetResponse();
     }
 
     public async Task<ErrorOr<Success>> DeleteAsync(
@@ -132,4 +138,48 @@ public sealed class AssetService : IAssetService
 
         return Result.Success;
     }
+
+    public async Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(
+        Guid assetId,
+        AssignAssetRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
+        if (asset is null) return AssetErrors.NotFound(assetId);
+
+        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId, cancellationToken);
+        if (employee is null) return EmployeeErrors.NotFound(request.EmployeeId);
+
+        // Mbajtesi aktual, jo ai qe po kerkohet — perndryshe mesazhi tregon personin e gabuar.
+        if (asset.AssignedToEmployeeId is not null)
+        {
+            return AssetErrors.AlreadyAssigned(assetId, asset.AssignedToEmployeeId.Value);
+        }
+
+        asset.AssignedToEmployeeId = request.EmployeeId;
+        asset.Status = AssetStatus.Assigned;
+        
+        await _assetRepository.UpdateAsync(asset, cancellationToken);
+        
+        return Result.Success;
+    }
+
+    public async Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(
+        Guid assetId,
+        CancellationToken cancellationToken = default)
+    {
+        var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
+        if (asset is null) return AssetErrors.NotFound(assetId);
+
+        if (asset.AssignedToEmployeeId is null) return AssetErrors.NotAssigned(assetId);
+
+        asset.AssignedToEmployeeId = null;
+        asset.Status = AssetStatus.InStock;
+
+        await _assetRepository.UpdateAsync(asset, cancellationToken);
+
+        return Result.Success;
+    }
+
+    
 }

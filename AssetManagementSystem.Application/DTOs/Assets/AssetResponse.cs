@@ -13,6 +13,10 @@ public sealed record AssetResponse
     public required DateTime PurchaseDate { get; init; }
     public required decimal PurchasePrice { get; init; }
     public DateTime? WarrantyExpiryDate { get; init; }
+    /// <summary>Te tria null-e kur aseti eshte i lire. Lexohen nga lidhjet, nuk ruhen ne tabelen Assets.</summary>
+    public Guid? AssignedToEmployeeId { get; init; }
+    public string? AssignedToEmployeeName { get; init; }
+    public string? AssignedToDepartmentName { get; init; }
 
     /// <summary>Fushe e llogaritur — klienti s'ka pse ta llogarise vete.</summary>
     public required bool IsUnderWarranty { get; init; }

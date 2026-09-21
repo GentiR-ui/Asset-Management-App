@@ -13,13 +13,13 @@ public class EmployeeRepository : IEmployeeRepository
         _context = context;
     }
 
-    // Pa Include dhe i gjurmuar: perdoret nga Update dhe Delete.
+    
     public async Task<Employee?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Employees.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
-    // Me Include dhe pa gjurmim: perdoret vetem per lexim.
+    
     public async Task<Employee?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Employees
@@ -27,6 +27,12 @@ public class EmployeeRepository : IEmployeeRepository
             .Include(employee => employee.User)
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
+    // Pa AsNoTracking: ky entitet do te fshihet, prandaj duhet i gjurmuar.
+    public async Task<Employee?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
     }
 
     public async Task<IReadOnlyList<Employee>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -60,11 +66,6 @@ public class EmployeeRepository : IEmployeeRepository
     {
         return await _context.Employees
             .AnyAsync(e => e.EmployeeCode == employeeCode && (excludeId == null || e.Id != excludeId), cancellationToken);
-    }
-
-    public async Task<bool> IsUserLinkedAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Employees.AnyAsync(e => e.UserId == userId, cancellationToken);
     }
 
     public async Task<bool> HasEmployeesInDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default)
