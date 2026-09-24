@@ -1,4 +1,6 @@
+using AssetManagementSystem.Application.Common.Caching;
 using AssetManagementSystem.Application.Common.Mappings;
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Employees;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Errors;
@@ -20,7 +22,7 @@ public class EmployeeService : IEmployeeService
         _departmentRepository = departmentRepository;
     }
 
-    public async Task<ErrorOr<EmployeeResponse>> UpdateEmployeeAsync(Guid employeeId, UpdateEmployeeRequest request, CancellationToken cancellationToken = default)
+    public async Task<ErrorOr<EmployeeResponse>> UpdateEmployeeAsync(Guid employeeId, UpdateEmployeeRequest request, CancellationToken cancellationToken = default, ICacheService _cacheService = default!)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId, cancellationToken);
 
@@ -48,9 +50,13 @@ public class EmployeeService : IEmployeeService
 
         await _employeeRepository.UpdateAsync(employee, cancellationToken);
 
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+
         // Rilexohet me Include: entiteti i mesiperm s'i ka navigimet e ngarkuara,
         // dhe vendosja e tyre para Update() do t'i shenonte Users e Departments si te ndryshuar.
         var updated = await _employeeRepository.GetByIdWithDetailsAsync(employeeId, cancellationToken);
+
+
 
         return updated!.ToEmployeeResponse();
     }
@@ -67,10 +73,10 @@ public class EmployeeService : IEmployeeService
         return employee.ToEmployeeResponse();
     }
 
-    public async Task<IReadOnlyList<EmployeeResponse>> GetAllEmployeesAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<EmployeeResponse>> GetEmployeesAsync(PageQueryRequest request, CancellationToken cancellationToken = default)
     {
-        var employees = await _employeeRepository.GetAllAsync(cancellationToken);
+        var page = await _employeeRepository.GetPagedAsync(request.Page, request.PageSize, cancellationToken);
 
-        return employees.Select(employee => employee.ToEmployeeResponse()).ToList();
+        return page.ToPagedResponse(request.Page, request.PageSize, employee => employee.ToEmployeeResponse());
     }
 }

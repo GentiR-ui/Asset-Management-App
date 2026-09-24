@@ -21,8 +21,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection")));
+                configuration.GetConnectionString("DefaultConnection"))
+                
+                );
 
+        
                 
         services.AddIdentity<User, UserRole>(
             options =>
@@ -43,6 +46,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ITransactionRunner, TransactionRunner>();
+
+        
+
 
 
         

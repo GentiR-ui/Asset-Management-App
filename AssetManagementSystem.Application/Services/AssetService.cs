@@ -1,11 +1,14 @@
 using AssetManagementSystem.Application.Common.Mappings;
 using AssetManagementSystem.Application.DTOs.Assets;
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Errors;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Domain.ReadModels;
 using AssetManagementSystem.Domain.Enums;
 using ErrorOr;
+using AssetManagementSystem.Application.Common.Caching;
 
 namespace AssetManagementSystem.Application.Services;
 
@@ -22,7 +25,8 @@ public sealed class AssetService : IAssetService
 
     public async Task<ErrorOr<AssetResponse>> CreateAsync(
         CreateAssetRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ICacheService _cacheService = default!)
     {
         var assetTag = request.AssetTag.Trim();
         var serialNumber = request.SerialNumber.Trim();
@@ -53,6 +57,8 @@ public sealed class AssetService : IAssetService
 
         await _assetRepository.AddAsync(asset, cancellationToken);
 
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+
         return asset.ToAssetResponse();
     }
 
@@ -68,18 +74,23 @@ public sealed class AssetService : IAssetService
     }
 
     
-    public async Task<IReadOnlyList<AssetResponse>> GetAllAsync(
+    public async Task<PagedResponse<AssetResponse>> GetPagedAsync(
+        AssetQueryRequest request,
         CancellationToken cancellationToken = default)
     {
-        var assets = await _assetRepository.GetAllAsync(cancellationToken);
+        var filter = new AssetFilter(
+            request.Category, request.Status, request.Search, request.Page, request.PageSize);
 
-        return assets.Select(asset => asset.ToAssetResponse()).ToList();
+        var page = await _assetRepository.GetPagedAsync(filter, cancellationToken);
+
+        return page.ToPagedResponse(request.Page, request.PageSize, asset => asset.ToAssetResponse());
     }
 
     public async Task<ErrorOr<AssetResponse>> UpdateAsync(
         Guid id,
         UpdateAssetRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ICacheService _cacheService = default!)
     {
         var asset = await _assetRepository.GetByIdAsync(id, cancellationToken);
 
@@ -114,7 +125,7 @@ public sealed class AssetService : IAssetService
         asset.Notes = request.Notes;
 
         await _assetRepository.UpdateAsync(asset, cancellationToken);
-
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
         // Rilexohet me Include: entiteti i mesiperm s'i ka navigimet e ngarkuara,
         // dhe vendosja e tyre para Update() do t'i shenonte Employees e Users si te ndryshuar.
         var updated = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
@@ -124,7 +135,8 @@ public sealed class AssetService : IAssetService
 
     public async Task<ErrorOr<Success>> DeleteAsync(
         Guid id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ICacheService _cacheService = default!)
     {
         var asset = await _assetRepository.GetByIdAsync(id, cancellationToken);
 
@@ -136,13 +148,16 @@ public sealed class AssetService : IAssetService
         
         await _assetRepository.RemoveAsync(asset, cancellationToken);
 
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+
         return Result.Success;
     }
 
     public async Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(
         Guid assetId,
         AssignAssetRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ICacheService _cacheService = default!)
     {
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
@@ -161,12 +176,15 @@ public sealed class AssetService : IAssetService
         
         await _assetRepository.UpdateAsync(asset, cancellationToken);
         
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+
         return Result.Success;
     }
 
     public async Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(
         Guid assetId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ICacheService _cacheService = default!)
     {
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
@@ -177,6 +195,8 @@ public sealed class AssetService : IAssetService
         asset.Status = AssetStatus.InStock;
 
         await _assetRepository.UpdateAsync(asset, cancellationToken);
+
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
 
         return Result.Success;
     }

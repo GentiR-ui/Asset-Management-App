@@ -1,5 +1,6 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Domain.ReadModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetManagementSystem.Infrastructure.Repositories;
@@ -25,12 +26,47 @@ public sealed class AssetRepository : IAssetRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
 
-    public async Task<IReadOnlyList<Asset>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        await _context.Assets
+    public async Task<PagedResult<Asset>> GetPagedAsync(AssetFilter filter, CancellationToken cancellationToken = default)
+    {
+        // Asgje nuk ekzekutohet ketu: cdo Where vetem e ndertohet mbi IQueryable.
+        var query = _context.Assets
             .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
             .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
-            .AsNoTracking()
+            .AsNoTracking();
+
+        if (filter.Category is not null)
+        {
+            query = query.Where(asset => asset.Category == filter.Category);
+        }
+
+        if (filter.Status is not null)
+        {
+            query = query.Where(asset => asset.Status == filter.Status);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim();
+
+            query = query.Where(asset => asset.Name.Contains(term)
+                                      || asset.AssetTag.Contains(term)
+                                      || asset.SerialNumber.Contains(term));
+        }
+
+        // Numerimi behet mbi query-n e filtruar, PARA Skip: totali eshte
+        // "sa rezultate ka ky filter", jo sa ka tabela.
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // OrderBy eshte i detyrueshem: pa te, SQL Server nuk garanton rend
+        // dhe faqja 2 mund te perserise rreshta te faqes 1, pa asnje gabim.
+        var items = await query
+            .OrderBy(asset => asset.AssetTag)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<Asset>(items, totalCount);
+    }
 
     public async Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default) =>
        await _context.Assets.AnyAsync(asset => asset.AssetTag == assetTag, cancellationToken);

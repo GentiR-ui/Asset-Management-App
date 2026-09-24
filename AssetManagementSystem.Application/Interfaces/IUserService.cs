@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Users;
 using ErrorOr;
 
@@ -7,7 +8,7 @@ public interface IUserService
 {
     Task<ErrorOr<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<UserResponse>> GetUsersAsync();
+    Task<PagedResponse<UserResponse>> GetUsersAsync(PageQueryRequest request);
 
     Task<ErrorOr<Success>> AssignRoleAsync(Guid userId, AssignRoleRequest request);
 

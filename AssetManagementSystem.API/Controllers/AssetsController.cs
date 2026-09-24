@@ -45,11 +45,11 @@ public sealed class AssetsController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] AssetQueryRequest request, CancellationToken cancellationToken)
     {
-        var assets = await _assetService.GetAllAsync(cancellationToken);
+        var assets = await _assetService.GetPagedAsync(request, cancellationToken);
 
-        return Success(assets);         
+        return Success(assets);
     }
 
     

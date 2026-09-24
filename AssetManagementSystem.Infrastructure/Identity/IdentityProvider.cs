@@ -1,6 +1,7 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Errors;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Domain.ReadModels;
 using ErrorOr;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -147,8 +148,20 @@ public class IdentityProvider : IIdentityProvider
 
     public async Task<User?> FindByIdAsync(Guid userId) => await _userManager.FindByIdAsync(userId.ToString());
 
-    public async Task<IReadOnlyList<User>> GetUsersAsync() =>
-        await _userManager.Users.ToListAsync();
+    public async Task<PagedResult<User>> GetUsersPagedAsync(int page, int pageSize)
+    {
+        var query = _userManager.Users.AsNoTracking();
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderBy(user => user.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<User>(items, totalCount);
+    }
 
 
     public async Task<ErrorOr<Success>> AssignRoleAsync(User user, string roleName)

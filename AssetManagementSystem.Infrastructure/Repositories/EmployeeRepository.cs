@@ -1,5 +1,6 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Domain.ReadModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetManagementSystem.Infrastructure.Repositories;
@@ -35,13 +36,22 @@ public class EmployeeRepository : IEmployeeRepository
         return await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Employee>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Employee>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        return await _context.Employees
+        var query = _context.Employees
             .Include(employee => employee.Department)
             .Include(employee => employee.User)
-            .AsNoTracking()
+            .AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderBy(employee => employee.EmployeeCode)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<Employee>(items, totalCount);
     }
 
     public async Task AddAsync(Employee employee, CancellationToken cancellationToken = default)

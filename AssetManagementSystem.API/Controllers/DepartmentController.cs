@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Department;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
@@ -35,11 +36,11 @@ public sealed class DepartmentController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] PageQueryRequest request, CancellationToken cancellationToken)
     {
-        var departments = await _departmentService.GetAllDepartmentsAsync(cancellationToken);
+        var departments = await _departmentService.GetDepartmentsAsync(request, cancellationToken);
 
-        return Success(departments);         
+        return Success(departments);
     }
 
     

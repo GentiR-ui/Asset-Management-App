@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Employees;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
@@ -30,11 +31,11 @@ public sealed class EmployeeController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] PageQueryRequest request, CancellationToken cancellationToken)
     {
-        var employees = await _employeeService.GetAllEmployeesAsync(cancellationToken);
+        var employees = await _employeeService.GetEmployeesAsync(request, cancellationToken);
 
-        return Success(employees);         
+        return Success(employees);
     }
 
     

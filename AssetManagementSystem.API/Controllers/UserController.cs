@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Users;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
@@ -26,9 +27,10 @@ public sealed class UserController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetUsers()
+    public async Task<IActionResult> GetUsers([FromQuery] PageQueryRequest request)
     {
-        var users = await _userService.GetUsersAsync();
+        var users = await _userService.GetUsersAsync(request);
+
         return Success(users);
     }
 

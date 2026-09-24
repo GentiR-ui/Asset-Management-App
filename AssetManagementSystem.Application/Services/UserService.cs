@@ -1,4 +1,5 @@
 using AssetManagementSystem.Application.Common.Mappings;
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Users;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Common;
@@ -81,19 +82,26 @@ public class UserService : IUserService
         }, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<UserResponse>> GetUsersAsync()
+    public async Task<PagedResponse<UserResponse>> GetUsersAsync(PageQueryRequest request)
     {
-        var users = await _identityProvider.GetUsersAsync();
+        var page = await _identityProvider.GetUsersPagedAsync(request.Page, request.PageSize);
         var userResponses = new List<UserResponse>();
 
-        // TODO: N+1 — nje query per cdo user. Optimizoje me nje JOIN te vetem ne Fazen 2.
-        foreach (var user in users)
+        // TODO: N+1 — nje query per cdo user. Faqosja e zbut (vetem nje faqe eshte ne loop),
+        // por zgjidhja e vertete eshte nje JOIN i vetem mbi UserRoles, ne Fazen 2.
+        foreach (var user in page.Items)
         {
             var roles = await _identityProvider.GetRolesAsync(user);
             userResponses.Add(user.ToUserResponse(roles));
         }
 
-        return userResponses;
+        return new PagedResponse<UserResponse>
+        {
+            Items = userResponses,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = page.TotalCount
+        };
     }
 
     public async Task<ErrorOr<Success>> AssignRoleAsync(Guid userId, AssignRoleRequest request)

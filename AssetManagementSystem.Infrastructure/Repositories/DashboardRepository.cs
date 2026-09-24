@@ -31,9 +31,7 @@ public sealed class DashboardRepository : IDashboardRepository
 
     public async Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(CancellationToken cancellationToken = default)
     {
-        var a = new List<String>();
-        var b= a.Count;
-        var c = a.Count();
+       
         return await _context.Assets
             .GroupBy(asset => new
             {

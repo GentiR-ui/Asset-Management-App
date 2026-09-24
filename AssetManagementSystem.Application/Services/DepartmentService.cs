@@ -1,4 +1,6 @@
+using AssetManagementSystem.Application.Common.Caching;
 using AssetManagementSystem.Application.Common.Mappings;
+using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Department;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Errors;
@@ -42,7 +44,7 @@ public class DepartmentService : IDepartmentService
 
         return department.ToDepartmentResponse();
     }
-    public async Task<ErrorOr<DepartmentResponse>> UpdateDepartmentAsync(Guid departmentId, UpdateDepartmentRequest request, CancellationToken cancellationToken = default)
+    public async Task<ErrorOr<DepartmentResponse>> UpdateDepartmentAsync(Guid departmentId, UpdateDepartmentRequest request, CancellationToken cancellationToken = default, ICacheService _cacheService = default!)
     {
         var department = await _departmentRepository.GetByIdAsync(departmentId, cancellationToken);
 
@@ -69,6 +71,8 @@ public class DepartmentService : IDepartmentService
 
         await _departmentRepository.UpdateAsync(department, cancellationToken);
 
+        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+
         return department.ToDepartmentResponse();
     }
 
@@ -84,10 +88,11 @@ public class DepartmentService : IDepartmentService
         return department.ToDepartmentResponse();
     }
 
-    public async Task<IReadOnlyList<DepartmentResponse>> GetAllDepartmentsAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<DepartmentResponse>> GetDepartmentsAsync(PageQueryRequest request, CancellationToken cancellationToken = default)
     {
-         var departments = await _departmentRepository.GetAllAsync(cancellationToken);
-        return departments.Select(d => d.ToDepartmentResponse()).ToList();
+        var page = await _departmentRepository.GetPagedAsync(request.Page, request.PageSize, cancellationToken);
+
+        return page.ToPagedResponse(request.Page, request.PageSize, department => department.ToDepartmentResponse());
     }
     public async Task<ErrorOr<Success>> DeleteDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default)
     {

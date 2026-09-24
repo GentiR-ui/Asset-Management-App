@@ -1,4 +1,5 @@
 using AssetManagementSystem.Domain.Entities;
+using AssetManagementSystem.Domain.ReadModels;
 
 namespace AssetManagementSystem.Domain.Interfaces;
 
@@ -8,7 +9,7 @@ public interface IAssetRepository
 
     Task<Asset?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Asset>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<Asset>> GetPagedAsync(AssetFilter filter, CancellationToken cancellationToken = default);
 
     Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default);
 

@@ -1,5 +1,6 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Domain.ReadModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetManagementSystem.Infrastructure.Repositories;
@@ -18,9 +19,19 @@ public class DepartmentRepository : IDepartmentRepository
         return await _context.Departments.FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Department>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Department>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        return await _context.Departments.ToListAsync(cancellationToken);
+        var query = _context.Departments.AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderBy(department => department.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Department>(items, totalCount);
     }
 
     public async Task AddAsync(Department department, CancellationToken cancellationToken = default)
