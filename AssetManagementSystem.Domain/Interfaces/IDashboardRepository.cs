@@ -8,6 +8,10 @@ public interface IDashboardRepository
 
     Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>I njejti rezultat si AssetValuesByDepartmentAsync, por permes stored procedure.</summary>
+    Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentSpAsync(
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<StatusAssetValue>> AssetValuesByStatusAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<CategoryAssetValue>> AssetValuesByCategoryAsync(CancellationToken cancellationToken = default);

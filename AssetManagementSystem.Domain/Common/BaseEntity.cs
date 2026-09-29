@@ -8,7 +8,10 @@ public abstract class BaseEntity
 
     public DateTime? UpdatedAt { get; protected set; }
 
+    public Guid? UpdatedBy { get; protected set; }
+
     protected BaseEntity()
+
     {
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;

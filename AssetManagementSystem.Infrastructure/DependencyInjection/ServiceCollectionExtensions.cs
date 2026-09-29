@@ -2,9 +2,11 @@ using System.Text;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
 using AssetManagementSystem.Infrastructure.Identity;
+using AssetManagementSystem.Infrastructure.Interceptors;
 using AssetManagementSystem.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,6 +48,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ITransactionRunner, TransactionRunner>();
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<AuditExecuteUpdateInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        {
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditExecuteUpdateInterceptor>());
+        });
+
+
+
+
 
         
 

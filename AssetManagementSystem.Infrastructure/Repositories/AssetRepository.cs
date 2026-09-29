@@ -1,6 +1,9 @@
+using System.Security.Claims;
 using AssetManagementSystem.Domain.Entities;
+using AssetManagementSystem.Domain.Enums;
 using AssetManagementSystem.Domain.Interfaces;
 using AssetManagementSystem.Domain.ReadModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetManagementSystem.Infrastructure.Repositories;
@@ -8,11 +11,14 @@ namespace AssetManagementSystem.Infrastructure.Repositories;
 public sealed class AssetRepository : IAssetRepository
 {
     private readonly ApplicationDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AssetRepository(ApplicationDbContext context)
+    public AssetRepository(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
     }
+
 
     public async Task<Asset?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Assets.FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
@@ -100,5 +106,19 @@ public sealed class AssetRepository : IAssetRepository
     {
         return await _context.Assets
             .AnyAsync(a => a.AssignedToEmployeeId == employeeId, cancellationToken);
-    }    
+    }
+
+    public async Task UnassignAssetsByDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default)
+    {
+        await _context.Assets
+            .Where(a => a.AssignedToEmployee != null && a.AssignedToEmployee.DepartmentId == departmentId)
+            .ExecuteUpdateAsync(setter => setter
+                .SetProperty(a => a.AssignedToEmployeeId, (Guid?)null)
+                .SetProperty(a => a.Status, AssetStatus.InStock),
+                cancellationToken);
+    }
+
+
+
 }
+

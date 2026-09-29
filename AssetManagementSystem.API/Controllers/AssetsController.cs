@@ -92,5 +92,14 @@ public sealed class AssetsController : ApiControllerBase
         return HandleResult(result, "Asset unassigned from employee successfully.");
     }
 
+    [HttpPost("departments/{departmentId:guid}/unassign-assets")]
+    public async Task<IActionResult> ResetDepartmentAssets(
+        Guid departmentId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _assetService.ResetDepartmentAssetsAsync(departmentId, cancellationToken);
 
+        return HandleResult(result, "All assets for department unassigned successfully.");
+    }
 }
+

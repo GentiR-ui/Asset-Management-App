@@ -16,12 +16,18 @@ public sealed class AssetService : IAssetService
 {
     private readonly IAssetRepository _assetRepository;
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IDepartmentRepository _departmentRepository;
 
-    public AssetService(IAssetRepository assetRepository, IEmployeeRepository employeeRepository)
+    public AssetService(
+        IAssetRepository assetRepository,
+        IEmployeeRepository employeeRepository,
+        IDepartmentRepository departmentRepository)
     {
         _assetRepository = assetRepository;
         _employeeRepository = employeeRepository;
+        _departmentRepository = departmentRepository;
     }
+
 
     public async Task<ErrorOr<AssetResponse>> CreateAsync(
         CreateAssetRequest request,
@@ -200,6 +206,27 @@ public sealed class AssetService : IAssetService
 
         return Result.Success;
     }
+
+    public async Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(
+    Guid departmentId, 
+    CancellationToken cancellationToken = default, 
+    ICacheService cacheService = default!)
+    {
+        var department = await _departmentRepository.GetByIdAsync(departmentId, cancellationToken);
+        if (department is null)
+        {
+            return DepartmentErrors.NotFound(departmentId);
+        }
+
+        // Ekzekuton UPDATE-in masiv direkt ne SQL Server
+        await _assetRepository.UnassignAssetsByDepartmentAsync(departmentId, cancellationToken);
+
+        // Si ne metodat tjera te projektit tuaj, pastrojme kashen e Dashboard-it
+        await cacheService.InvalidateDashboardAsync(cancellationToken);
+
+        return Result.Success;
+    }
+
 
     
 }

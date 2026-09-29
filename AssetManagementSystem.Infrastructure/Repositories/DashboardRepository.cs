@@ -1,6 +1,9 @@
 using AssetManagementSystem.Domain.Interfaces;
 using AssetManagementSystem.Domain.ReadModels;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Dapper;
+
 
 
 namespace AssetManagementSystem.Infrastructure.Repositories;
@@ -46,6 +49,23 @@ public sealed class DashboardRepository : IDashboardRepository
                 group.Sum(asset => asset.PurchasePrice)))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentSpAsync(
+    CancellationToken cancellationToken = default)
+    {
+        // Lidhja e EF-it, jo nje e dyte: i njejti connection string dhe i njejti pool.
+        var connection = _context.Database.GetDbConnection();
+
+        var command = new CommandDefinition(
+            "dbo.GetAssetValueByDepartment",
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken);
+
+        var rows = await connection.QueryAsync<DepartmentAssetValue>(command);
+
+        return rows.ToList();
+    }
+
 
     public async Task<IReadOnlyList<StatusAssetValue>> AssetValuesByStatusAsync(CancellationToken cancellationToken = default)
     {

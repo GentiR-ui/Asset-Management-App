@@ -1,10 +1,8 @@
-using AssetManagementSystem.Application.Caching;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Application.Services;
 using AssetManagementSystem.Application.Validators;
 using AssetManagementSystem.Domain.Interfaces;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

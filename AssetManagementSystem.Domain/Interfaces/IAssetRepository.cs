@@ -22,4 +22,6 @@ public interface IAssetRepository
     Task RemoveAsync(Asset asset, CancellationToken cancellationToken = default);
 
     Task<bool> HasAssetsAssignedToEmployeeAsync(Guid employeeId, CancellationToken cancellationToken = default);
+    Task UnassignAssetsByDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default);
+
 }

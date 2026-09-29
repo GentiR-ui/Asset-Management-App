@@ -14,4 +14,6 @@ public interface IAssetService
     Task<ErrorOr<Success>> DeleteAsync(Guid id, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
     Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(Guid assetId, AssignAssetRequest request, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
     Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(Guid assetId, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
+    Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(Guid departmentId, CancellationToken cancellationToken = default, ICacheService cacheService = default!);
 }
+
