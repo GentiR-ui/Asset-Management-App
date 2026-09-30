@@ -13,5 +13,6 @@ public sealed record CreateAssetRequest
     public decimal PurchasePrice { get; init; }
     public DateTime? WarrantyExpiryDate { get; init; }
     public string? Notes { get; init; }
+    public Guid DepartmentId { get; init; }
 }
 

@@ -26,7 +26,8 @@ public static class AssetMappings
         AssignedToEmployeeName = asset.AssignedToEmployee is null
             ? null
             : $"{asset.AssignedToEmployee.User.FirstName} {asset.AssignedToEmployee.User.LastName}",
-        AssignedToDepartmentName = asset.AssignedToEmployee?.Department.Name,
+        AssignedToDepartmentName = asset.Department.Name,
+        DepartmentId = asset.DepartmentId,
         CreatedAt = asset.CreatedAt
     };
 }

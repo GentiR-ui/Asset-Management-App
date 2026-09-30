@@ -14,7 +14,6 @@ public interface IAssetRepository
     Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default);
 
     Task<bool> SerialNumberExistsAsync(string serialNumber, CancellationToken cancellationToken = default);
-
     Task AddAsync(Asset asset, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(Asset asset, CancellationToken cancellationToken = default);

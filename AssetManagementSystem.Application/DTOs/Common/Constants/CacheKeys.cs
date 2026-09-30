@@ -1,3 +1,5 @@
+using AssetManagementSystem.Application.Common.Authorization;
+
 namespace AssetManagementSystem.Application.Common.Constants;
 
 public static class CacheKeys
@@ -17,4 +19,8 @@ public static class CacheKeys
         ByCategory, 
         Age
     ];
+
+    public static string ForScope(string baseKey, AssetQueryScope scope) =>
+        $"{baseKey}:{(scope.IsGlobal ? "global" : scope.DepartmentId.ToString())}";
+
 }

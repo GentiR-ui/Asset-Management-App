@@ -11,4 +11,6 @@ public class Department : BaseEntity
     public string Code { get; set; } = string.Empty;
 
     public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public ICollection<Asset> Assets { get; set; } = new List<Asset>();
+
 }

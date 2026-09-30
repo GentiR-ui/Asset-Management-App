@@ -18,7 +18,7 @@ public sealed class JwtTokenService : ITokenService
         _settings = settings.Value;
     }
 
-    public AccessToken GenerateToken(User user, IEnumerable<string> roles)
+    public AccessToken GenerateToken(User user, IEnumerable<string> roles, Guid? departmentId = null)
     {
         var expiresAt = DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes);
 
@@ -32,6 +32,11 @@ public sealed class JwtTokenService : ITokenService
         };
 
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        if (departmentId.HasValue)
+        {
+            claims.Add(new Claim("department_id", departmentId.Value.ToString()));
+        }
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);

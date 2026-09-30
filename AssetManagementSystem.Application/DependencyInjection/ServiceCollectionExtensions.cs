@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Common.Authorization;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Application.Services;
 using AssetManagementSystem.Application.Validators;
@@ -23,6 +24,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IAssetScopeResolver, AssetScopeResolver>();
+
         
         var redisConnection = configuration.GetConnectionString("Redis");
 

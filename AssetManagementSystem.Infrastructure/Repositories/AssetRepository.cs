@@ -29,6 +29,7 @@ public sealed class AssetRepository : IAssetRepository
         await _context.Assets
             .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
             .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
+            .Include(a => a.Department)
             .AsNoTracking()
             .FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
 
@@ -38,6 +39,7 @@ public sealed class AssetRepository : IAssetRepository
         var query = _context.Assets
             .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
             .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
+            .Include(a => a.Department)
             .AsNoTracking();
 
         if (filter.Category is not null)
@@ -80,7 +82,11 @@ public sealed class AssetRepository : IAssetRepository
     public async Task<bool> SerialNumberExistsAsync(string serialNumber, CancellationToken cancellationToken = default) =>
         await _context.Assets.AnyAsync(asset => asset.SerialNumber == serialNumber, cancellationToken);
 
-    
+    public async Task<bool> AssetAtDepartmentExistsAsync(Guid departmentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Assets
+            .AnyAsync(asset => asset.DepartmentId == departmentId, cancellationToken);
+    }
     public async Task AddAsync(Asset asset, CancellationToken cancellationToken = default)
     {
         await _context.Assets.AddAsync(asset, cancellationToken);
@@ -111,7 +117,7 @@ public sealed class AssetRepository : IAssetRepository
     public async Task UnassignAssetsByDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default)
     {
         await _context.Assets
-            .Where(a => a.AssignedToEmployee != null && a.AssignedToEmployee.DepartmentId == departmentId)
+            .Where(a => a.DepartmentId == departmentId)
             .ExecuteUpdateAsync(setter => setter
                 .SetProperty(a => a.AssignedToEmployeeId, (Guid?)null)
                 .SetProperty(a => a.Status, AssetStatus.InStock),

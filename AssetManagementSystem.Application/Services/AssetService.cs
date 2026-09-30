@@ -17,15 +17,18 @@ public sealed class AssetService : IAssetService
     private readonly IAssetRepository _assetRepository;
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IDepartmentRepository _departmentRepository;
-
+    private readonly IAssetScopeResolver _scopeResolver;
     public AssetService(
         IAssetRepository assetRepository,
         IEmployeeRepository employeeRepository,
-        IDepartmentRepository departmentRepository)
+        IDepartmentRepository departmentRepository,
+        IAssetScopeResolver scopeResolver
+        )
     {
         _assetRepository = assetRepository;
         _employeeRepository = employeeRepository;
         _departmentRepository = departmentRepository;
+        _scopeResolver = scopeResolver;
     }
 
 
@@ -34,6 +37,12 @@ public sealed class AssetService : IAssetService
         CancellationToken cancellationToken = default,
         ICacheService _cacheService = default!)
     {
+        var scope = _scopeResolver.ResolveScope();
+
+        if (!scope.IsGlobal && request.DepartmentId != scope.DepartmentId)
+        {
+            return Error.Forbidden(description: "You can only create assets for your assigned department.");
+        }
         var assetTag = request.AssetTag.Trim();
         var serialNumber = request.SerialNumber.Trim();
 
@@ -47,13 +56,19 @@ public sealed class AssetService : IAssetService
             return AssetErrors.SerialNumberAlreadyExists(serialNumber);
         }
 
+        var department = await _departmentRepository.GetByIdAsync(request.DepartmentId, cancellationToken);
+        if (department is null)
+        {
+            return DepartmentErrors.NotFound(request.DepartmentId);
+        }
+
         var asset = new Asset
         {
             AssetTag = assetTag,
             Name = request.Name.Trim(),
             Category = request.Category,
             SerialNumber = serialNumber,
-            
+            DepartmentId = request.DepartmentId,
             Status = AssetStatus.InStock,
             PurchaseDate = request.PurchaseDate,
             PurchasePrice = request.PurchasePrice,
@@ -63,29 +78,48 @@ public sealed class AssetService : IAssetService
 
         await _assetRepository.AddAsync(asset, cancellationToken);
 
-        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
 
         return asset.ToAssetResponse();
     }
 
-    public async Task<ErrorOr<AssetResponse>> GetByIdAsync(
-        Guid id,
-        CancellationToken cancellationToken = default)
+    public async Task<ErrorOr<AssetResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var asset = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
+        var scope = _scopeResolver.ResolveScope(); // <-- KËTU
 
-        return asset is null
-            ? AssetErrors.NotFound(id)
-            : asset.ToAssetResponse();
+        var asset = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
+        if (asset is null)
+        {
+            return AssetErrors.NotFound(id);
+        }
+
+        // Refuzim nëse nuk është Admin dhe nuk i takon departamentit të tij
+        if (!scope.IsGlobal && asset.DepartmentId != scope.DepartmentId)
+        {
+            return AssetErrors.NotFound(id); // ose Error.Forbidden
+        }
+
+        return asset.ToAssetResponse();
     }
+
 
     
     public async Task<PagedResponse<AssetResponse>> GetPagedAsync(
         AssetQueryRequest request,
         CancellationToken cancellationToken = default)
     {
+        var scope = _scopeResolver.ResolveScope();
+
+        var filterDepartmentId = scope.IsGlobal ? null : scope.DepartmentId;
         var filter = new AssetFilter(
-            request.Category, request.Status, request.Search, request.Page, request.PageSize);
+            request.Category, 
+            request.Status, 
+            request.Search, 
+            request.Page, 
+            request.PageSize,
+            filterDepartmentId);
+
+        
 
         var page = await _assetRepository.GetPagedAsync(filter, cancellationToken);
 
@@ -131,7 +165,7 @@ public sealed class AssetService : IAssetService
         asset.Notes = request.Notes;
 
         await _assetRepository.UpdateAsync(asset, cancellationToken);
-        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
         // Rilexohet me Include: entiteti i mesiperm s'i ka navigimet e ngarkuara,
         // dhe vendosja e tyre para Update() do t'i shenonte Employees e Users si te ndryshuar.
         var updated = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
@@ -154,7 +188,7 @@ public sealed class AssetService : IAssetService
         
         await _assetRepository.RemoveAsync(asset, cancellationToken);
 
-        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
 
         return Result.Success;
     }
@@ -165,8 +199,16 @@ public sealed class AssetService : IAssetService
         CancellationToken cancellationToken = default,
         ICacheService _cacheService = default!)
     {
+        var scope = _scopeResolver.ResolveScope();
+
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
+
+        if (!scope.IsGlobal && asset.DepartmentId != scope.DepartmentId)
+        {
+            return Error.Forbidden(description: "You can only manage assets within your department.");
+        }
+
 
         var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId, cancellationToken);
         if (employee is null) return EmployeeErrors.NotFound(request.EmployeeId);
@@ -177,12 +219,17 @@ public sealed class AssetService : IAssetService
             return AssetErrors.AlreadyAssigned(assetId, asset.AssignedToEmployeeId.Value);
         }
 
+        if (employee.DepartmentId != asset.DepartmentId)
+        {
+            return AssetErrors.EmployeeNotInAssetDepartment;
+        }
+
         asset.AssignedToEmployeeId = request.EmployeeId;
         asset.Status = AssetStatus.Assigned;
         
         await _assetRepository.UpdateAsync(asset, cancellationToken);
         
-        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
 
         return Result.Success;
     }
@@ -192,8 +239,15 @@ public sealed class AssetService : IAssetService
         CancellationToken cancellationToken = default,
         ICacheService _cacheService = default!)
     {
+        var scope = _scopeResolver.ResolveScope();
+
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
+
+        if (!scope.IsGlobal && asset.DepartmentId != scope.DepartmentId)
+        {
+            return Error.Forbidden(description: "You can only manage assets within your department.");
+        }
 
         if (asset.AssignedToEmployeeId is null) return AssetErrors.NotAssigned(assetId);
 
@@ -202,16 +256,48 @@ public sealed class AssetService : IAssetService
 
         await _assetRepository.UpdateAsync(asset, cancellationToken);
 
-        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
 
         return Result.Success;
     }
+
+    public async Task<ErrorOr<Success>> TransferAssetToDepartmentAsync(
+        Guid assetId,
+        Guid newDepartmentId,
+         CancellationToken cancellationToken = default,
+         ICacheService cacheService = default!)
+    {
+        
+        var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
+        if (asset is null) return AssetErrors.NotFound(assetId);
+
+        
+
+        var departmentExists = await _departmentRepository.GetByIdAsync(newDepartmentId, cancellationToken);
+        if (departmentExists is null) return DepartmentErrors.NotFound(newDepartmentId);
+
+        // Logjika e sigurisë: Nëse aseti i është caktuar një punëtori, ia heqim caktimin para transferit
+        if (asset.AssignedToEmployeeId is not null)
+        {
+            asset.AssignedToEmployeeId = null;
+            asset.Status = AssetStatus.InStock;
+        }
+
+        asset.DepartmentId = newDepartmentId;
+
+        await _assetRepository.UpdateAsync(asset, cancellationToken);
+        await cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
+
+        return Result.Success;
+    }
+
 
     public async Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(
     Guid departmentId, 
     CancellationToken cancellationToken = default, 
     ICacheService cacheService = default!)
     {
+        
         var department = await _departmentRepository.GetByIdAsync(departmentId, cancellationToken);
         if (department is null)
         {
@@ -222,7 +308,7 @@ public sealed class AssetService : IAssetService
         await _assetRepository.UnassignAssetsByDepartmentAsync(departmentId, cancellationToken);
 
         // Si ne metodat tjera te projektit tuaj, pastrojme kashen e Dashboard-it
-        await cacheService.InvalidateDashboardAsync(cancellationToken);
+        await cacheService.InvalidateDashboardAsync(departmentId, cancellationToken);
 
         return Result.Success;
     }

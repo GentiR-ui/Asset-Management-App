@@ -5,6 +5,7 @@ namespace AssetManagementSystem.Domain.Interfaces;
 
 public interface ITokenService
 {
-    AccessToken GenerateToken(User user, IEnumerable<string> roles);
+    AccessToken GenerateToken(User user, IEnumerable<string> roles, Guid? departmentId = null);
+    
 }
 

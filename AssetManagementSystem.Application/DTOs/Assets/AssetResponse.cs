@@ -23,4 +23,6 @@ public sealed record AssetResponse
 
     public string? Notes { get; init; }
     public required DateTime CreatedAt { get; init; }
+
+    public required Guid DepartmentId { get; init; }
 }

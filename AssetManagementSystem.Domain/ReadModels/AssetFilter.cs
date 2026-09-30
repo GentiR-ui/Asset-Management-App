@@ -8,4 +8,6 @@ public sealed record AssetFilter(
     AssetStatus? Status,
     string? Search,
     int Page,
-    int PageSize);
+    int PageSize,
+    Guid? DepartmentId
+);

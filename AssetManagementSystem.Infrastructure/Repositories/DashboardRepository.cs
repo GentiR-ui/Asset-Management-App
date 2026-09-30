@@ -38,8 +38,8 @@ public sealed class DashboardRepository : IDashboardRepository
         return await _context.Assets
             .GroupBy(asset => new
             {
-                Id = (Guid?)asset.AssignedToEmployee!.DepartmentId,
-                Name = asset.AssignedToEmployee!.Department.Name
+                Id = (Guid?)asset.DepartmentId,
+                Name = asset.Department.Name
             })
             .OrderBy(group => group.Key.Name)
             .Select(group => new DepartmentAssetValue(

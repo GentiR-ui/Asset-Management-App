@@ -25,6 +25,9 @@ public class Asset : BaseEntity
 
     public Guid? AssignedToEmployeeId { get; set; }
     public Employee? AssignedToEmployee { get; set; }
+
+    public Guid DepartmentId { get; set; }
+    public Department Department { get; set; } = null!;
 }
 
 

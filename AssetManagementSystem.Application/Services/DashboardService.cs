@@ -19,16 +19,22 @@ public sealed class DashboardService : IDashboardService
 
     private readonly IDashboardRepository _dashboardRepository;
     private readonly ICacheService _cacheService;
+    private readonly IAssetScopeResolver _scopeResolver;
 
-    public DashboardService(IDashboardRepository dashboardRepository, ICacheService cacheService)
+    public DashboardService(IDashboardRepository dashboardRepository, ICacheService cacheService, IAssetScopeResolver scopeResolver)
     {
         _dashboardRepository = dashboardRepository;
         _cacheService = cacheService;
+        _scopeResolver = scopeResolver;
     }
 
     public async Task<AssetValueSummaryResponse> GetAssetValueSummaryAsync(CancellationToken cancellationToken = default)
     {
-        return await GetOrSetAsync(CacheKeys.TotalValue, async () =>
+        var scope = _scopeResolver.ResolveScope();
+
+        var cacheKey = CacheKeys.ForScope(CacheKeys.TotalValue, scope);
+
+        return await GetOrSetAsync(cacheKey, async () =>
         {
             var summary = await _dashboardRepository.AssetValueSummaryAsync(cancellationToken);
 
@@ -38,7 +44,11 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<DepartmentValueResponse>> GetValueByDepartmentAsync(CancellationToken cancellationToken = default)
     {
-        return await GetOrSetAsync(CacheKeys.ByDepartment, async () =>
+        var scope = _scopeResolver.ResolveScope();
+
+        var cacheKey = CacheKeys.ForScope(CacheKeys.ByDepartment, scope);
+
+        return await GetOrSetAsync(cacheKey, async () =>
         {
             var values = await _dashboardRepository.AssetValuesByDepartmentAsync(cancellationToken);
 
@@ -48,7 +58,11 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<StatusValueResponse>> GetAssetsByStatusAsync(CancellationToken cancellationToken = default)
     {
-        return await GetOrSetAsync(CacheKeys.ByStatus, async () =>
+        var scope = _scopeResolver.ResolveScope();
+
+        var cacheKey = CacheKeys.ForScope(CacheKeys.ByStatus, scope);
+
+        return await GetOrSetAsync(cacheKey, async () =>
         {
             var values = await _dashboardRepository.AssetValuesByStatusAsync(cancellationToken);
 
@@ -58,7 +72,11 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<CategoryValueResponse>> GetAssetsByCategoryAsync(CancellationToken cancellationToken = default)
     {
-        return await GetOrSetAsync(CacheKeys.ByCategory, async () =>
+        var scope = _scopeResolver.ResolveScope();
+
+        var cacheKey = CacheKeys.ForScope(CacheKeys.ByCategory, scope);
+
+        return await GetOrSetAsync(cacheKey, async () =>
         {
             var values = await _dashboardRepository.AssetValuesByCategoryAsync(cancellationToken);
 
@@ -67,8 +85,12 @@ public sealed class DashboardService : IDashboardService
     }
 
     public async Task<IReadOnlyList<AgeValueResponse>> GetAssetAgeDistributionAsync(CancellationToken cancellationToken = default)
-    {
-        return await GetOrSetAsync(CacheKeys.Age, async () =>
+    {   
+        var scope = _scopeResolver.ResolveScope();
+        
+        var cacheKey = CacheKeys.ForScope(CacheKeys.Age, scope);
+        
+        return await GetOrSetAsync(cacheKey, async () =>
         {
             var now = DateTime.UtcNow;
 

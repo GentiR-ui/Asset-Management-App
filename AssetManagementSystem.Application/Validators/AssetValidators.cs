@@ -39,6 +39,8 @@ public sealed class CreateAssetRequestValidator : AbstractValidator<CreateAssetR
 
         RuleFor(request => request.Notes)
             .MaximumLength(1000).WithMessage("Notes cannot exceed 1000 characters.");
+        
+        RuleFor(x => x.DepartmentId).NotEmpty().WithMessage("Department is required.");
     }
 }
 

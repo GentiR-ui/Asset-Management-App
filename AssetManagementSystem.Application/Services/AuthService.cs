@@ -14,12 +14,14 @@ public class AuthService : IAuthService
     private readonly IIdentityProvider _identityProvider;
     private readonly IEmailSender _emailSender;
     private readonly ITokenService _tokenService;
+    private readonly IEmployeeRepository _employeeRepository;
 
-    public AuthService(IIdentityProvider identityProvider, IEmailSender emailSender, ITokenService tokenService)
+    public AuthService(IIdentityProvider identityProvider, IEmailSender emailSender, ITokenService tokenService, IEmployeeRepository employeeRepository)
     {
         _identityProvider = identityProvider;
         _emailSender = emailSender;
         _tokenService = tokenService;
+        _employeeRepository = employeeRepository;
     }
 
 
@@ -67,7 +69,11 @@ public class AuthService : IAuthService
     private async Task<AuthResponse> BuildAuthResponseAsync(User user)
     {
         var roles = await _identityProvider.GetRolesAsync(user);
-        var accessToken = _tokenService.GenerateToken(user,roles);
+        
+        var employee = await _employeeRepository.GetByUserIdAsync(user.Id);
+        Guid? departmentId = employee?.DepartmentId;
+
+        var accessToken = _tokenService.GenerateToken(user,roles, departmentId);
 
         return user.ToAuthResponse(accessToken, roles);
     }
