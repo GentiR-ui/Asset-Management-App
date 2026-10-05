@@ -308,7 +308,8 @@ public sealed class AssetService : IAssetService
         await _assetRepository.UnassignAssetsByDepartmentAsync(departmentId, cancellationToken);
 
         // Si ne metodat tjera te projektit tuaj, pastrojme kashen e Dashboard-it
-        await cacheService.InvalidateDashboardAsync(departmentId, cancellationToken);
+        //e ki ni gabim?
+        await cacheService.InvalidateDashboardAsync(cancellationToken);
 
         return Result.Success;
     }

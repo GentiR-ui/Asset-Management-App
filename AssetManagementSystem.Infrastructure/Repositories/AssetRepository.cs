@@ -124,6 +124,22 @@ public sealed class AssetRepository : IAssetRepository
                 cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Asset>> GetExpiringWarrantiesAsync(
+    int daysThreshold, 
+    CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        var cutoffDate = now.AddDays(daysThreshold);
+
+        return await _context.Assets
+            .Where(a => a.WarrantyExpiryDate.HasValue 
+                    && a.WarrantyExpiryDate.Value >= now 
+                    && a.WarrantyExpiryDate.Value <= cutoffDate)
+            .OrderBy(a => a.WarrantyExpiryDate)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
 
 
 }

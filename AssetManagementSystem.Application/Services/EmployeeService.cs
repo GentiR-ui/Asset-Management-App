@@ -52,8 +52,6 @@ public class EmployeeService : IEmployeeService
 
         await _cacheService.InvalidateDashboardAsync(cancellationToken);
 
-        // Rilexohet me Include: entiteti i mesiperm s'i ka navigimet e ngarkuara,
-        // dhe vendosja e tyre para Update() do t'i shenonte Users e Departments si te ndryshuar.
         var updated = await _employeeRepository.GetByIdWithDetailsAsync(employeeId, cancellationToken);
 
 

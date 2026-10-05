@@ -25,7 +25,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IAssetScopeResolver, AssetScopeResolver>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        services.AddHostedService<WarrantyExpireBackgroundService>();
         
         var redisConnection = configuration.GetConnectionString("Redis");
 

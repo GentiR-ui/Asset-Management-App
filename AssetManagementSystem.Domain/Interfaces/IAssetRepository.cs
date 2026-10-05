@@ -22,5 +22,5 @@ public interface IAssetRepository
 
     Task<bool> HasAssetsAssignedToEmployeeAsync(Guid employeeId, CancellationToken cancellationToken = default);
     Task UnassignAssetsByDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default);
-
+    Task<IReadOnlyList<Asset>> GetExpiringWarrantiesAsync(int daysThreshold, CancellationToken cancellationToken);
 }
