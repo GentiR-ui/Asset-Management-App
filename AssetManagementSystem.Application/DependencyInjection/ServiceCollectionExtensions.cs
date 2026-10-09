@@ -25,7 +25,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IAssetScopeResolver, AssetScopeResolver>();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        // Singleton: CurrentUserService nuk ruan asnje fushe — userin e llogarit nga
+        // IHttpContextAccessor ne cdo thirrje. Duhet Singleton sepse
+        // AuditExecuteUpdateInterceptor (Singleton) varet nga ai: nje Singleton nuk
+        // mund te konsumoje Scoped (captive dependency) dhe .NET-i nuk niset fare.
+        services.AddSingleton<ICurrentUserService, CurrentUserService>();
 
         services.AddHostedService<WarrantyExpireBackgroundService>();
         

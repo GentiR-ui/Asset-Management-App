@@ -1,6 +1,7 @@
 using System.Text;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Infrastructure.Authorization;
 using AssetManagementSystem.Infrastructure.Identity;
 using AssetManagementSystem.Infrastructure.Interceptors;
 using AssetManagementSystem.Infrastructure.Repositories;
@@ -21,11 +22,6 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"))
-                
-                );
 
         
                 
@@ -48,10 +44,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ITransactionRunner, TransactionRunner>();
+        services.AddScoped<IScopeContext, ScopeContext>();
         services.AddHttpContextAccessor();
 
-        services.AddScoped<AuditExecuteUpdateInterceptor>();
+        // Singleton: interceptori nuk mban gjendje — userin e lexon nga IHttpContextAccessor
+        // ne momentin e thirrjes. Si Scoped, EF-i do shihte opsione te reja per cdo kerkese
+        // dhe do ndertonte nje service provider te brendshem te re — deri ne crash te 21-tin.
+        services.AddSingleton<AuditExecuteUpdateInterceptor>();
 
+        // Regjistrimi i VETEM i DbContext-it: nje burim i vertetes per konfigurimin.
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))

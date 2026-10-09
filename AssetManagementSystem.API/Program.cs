@@ -1,4 +1,5 @@
 using AssetManagementSystem.API.Filters;
+using AssetManagementSystem.API.Middleware;
 using AssetManagementSystem.Application.DependencyInjection;
 using AssetManagementSystem.Infrastructure.DependencyInjection;
 
@@ -36,6 +37,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Pas autentikimit: scope-i varet nga useri i identifikuar.
+app.UseMiddleware<ScopeMiddleware>();
+
 app.MapControllers();
 
 app.Run();

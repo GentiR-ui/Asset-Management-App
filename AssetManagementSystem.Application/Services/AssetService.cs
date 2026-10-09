@@ -18,26 +18,28 @@ public sealed class AssetService : IAssetService
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IDepartmentRepository _departmentRepository;
     private readonly IAssetScopeResolver _scopeResolver;
+    private readonly ICacheService _cacheService;
     public AssetService(
         IAssetRepository assetRepository,
         IEmployeeRepository employeeRepository,
         IDepartmentRepository departmentRepository,
-        IAssetScopeResolver scopeResolver
+        IAssetScopeResolver scopeResolver,
+        ICacheService cacheService
         )
     {
         _assetRepository = assetRepository;
         _employeeRepository = employeeRepository;
         _departmentRepository = departmentRepository;
         _scopeResolver = scopeResolver;
+        _cacheService = cacheService;
     }
 
 
     public async Task<ErrorOr<AssetResponse>> CreateAsync(
         CreateAssetRequest request,
-        CancellationToken cancellationToken = default,
-        ICacheService _cacheService = default!)
+        CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         if (!scope.IsGlobal && request.DepartmentId != scope.DepartmentId)
         {
@@ -85,7 +87,7 @@ public sealed class AssetService : IAssetService
 
     public async Task<ErrorOr<AssetResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope(); // <-- KËTU
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken); // <-- KËTU
 
         var asset = await _assetRepository.GetByIdWithDetailsAsync(id, cancellationToken);
         if (asset is null)
@@ -108,7 +110,7 @@ public sealed class AssetService : IAssetService
         AssetQueryRequest request,
         CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         var filterDepartmentId = scope.IsGlobal ? null : scope.DepartmentId;
         var filter = new AssetFilter(
@@ -129,8 +131,7 @@ public sealed class AssetService : IAssetService
     public async Task<ErrorOr<AssetResponse>> UpdateAsync(
         Guid id,
         UpdateAssetRequest request,
-        CancellationToken cancellationToken = default,
-        ICacheService _cacheService = default!)
+        CancellationToken cancellationToken = default)
     {
         var asset = await _assetRepository.GetByIdAsync(id, cancellationToken);
 
@@ -175,8 +176,7 @@ public sealed class AssetService : IAssetService
 
     public async Task<ErrorOr<Success>> DeleteAsync(
         Guid id,
-        CancellationToken cancellationToken = default,
-        ICacheService _cacheService = default!)
+        CancellationToken cancellationToken = default)
     {
         var asset = await _assetRepository.GetByIdAsync(id, cancellationToken);
 
@@ -196,10 +196,9 @@ public sealed class AssetService : IAssetService
     public async Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(
         Guid assetId,
         AssignAssetRequest request,
-        CancellationToken cancellationToken = default,
-        ICacheService _cacheService = default!)
+        CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
@@ -236,10 +235,9 @@ public sealed class AssetService : IAssetService
 
     public async Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(
         Guid assetId,
-        CancellationToken cancellationToken = default,
-        ICacheService _cacheService = default!)
+        CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
@@ -262,21 +260,19 @@ public sealed class AssetService : IAssetService
     }
 
     public async Task<ErrorOr<Success>> TransferAssetToDepartmentAsync(
-        Guid assetId,
-        Guid newDepartmentId,
-         CancellationToken cancellationToken = default,
-         ICacheService cacheService = default!)
+    Guid assetId,
+    Guid newDepartmentId,
+    CancellationToken cancellationToken = default)
     {
-        
         var asset = await _assetRepository.GetByIdAsync(assetId, cancellationToken);
         if (asset is null) return AssetErrors.NotFound(assetId);
-
-        
 
         var departmentExists = await _departmentRepository.GetByIdAsync(newDepartmentId, cancellationToken);
         if (departmentExists is null) return DepartmentErrors.NotFound(newDepartmentId);
 
-        // Logjika e sigurisë: Nëse aseti i është caktuar një punëtori, ia heqim caktimin para transferit
+        // Kapet PARA ndryshimit — pastaj humbet.
+        var oldDepartmentId = asset.DepartmentId;
+
         if (asset.AssignedToEmployeeId is not null)
         {
             asset.AssignedToEmployeeId = null;
@@ -286,33 +282,34 @@ public sealed class AssetService : IAssetService
         asset.DepartmentId = newDepartmentId;
 
         await _assetRepository.UpdateAsync(asset, cancellationToken);
-        await cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
+
+        // Transferi prek DY departamente: atë që e humbi dhe atë që e fitoi.
+        await _cacheService.InvalidateDashboardAsync(oldDepartmentId, cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(newDepartmentId, cancellationToken);
 
         return Result.Success;
     }
 
 
+
     public async Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(
-    Guid departmentId, 
-    CancellationToken cancellationToken = default, 
-    ICacheService cacheService = default!)
+    Guid departmentId,
+    CancellationToken cancellationToken = default)
     {
-        
         var department = await _departmentRepository.GetByIdAsync(departmentId, cancellationToken);
+
         if (department is null)
         {
             return DepartmentErrors.NotFound(departmentId);
         }
 
-        // Ekzekuton UPDATE-in masiv direkt ne SQL Server
         await _assetRepository.UnassignAssetsByDepartmentAsync(departmentId, cancellationToken);
 
-        // Si ne metodat tjera te projektit tuaj, pastrojme kashen e Dashboard-it
-        //e ki ni gabim?
-        await cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(departmentId, cancellationToken);
 
         return Result.Success;
     }
+
 
 
     

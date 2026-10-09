@@ -12,4 +12,5 @@ public sealed record AssetQueryScope
 
     public static AssetQueryScope Global() => new(true, null);
     public static AssetQueryScope Department(Guid departmentId) => new(false, departmentId);
+    public static AssetQueryScope None() => new(false, null);
 }

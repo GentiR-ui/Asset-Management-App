@@ -20,7 +20,6 @@ public sealed class DashboardRepository : IDashboardRepository
 
     public async Task<AssetValueSummary> AssetValueSummaryAsync(CancellationToken cancellationToken = default)
     {
-        
         var summary = await _context.Assets
             .GroupBy(_ => 1)
             .Select(group => new AssetValueSummary(
@@ -34,7 +33,6 @@ public sealed class DashboardRepository : IDashboardRepository
 
     public async Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(CancellationToken cancellationToken = default)
     {
-       
         return await _context.Assets
             .GroupBy(asset => new
             {
@@ -95,7 +93,6 @@ public sealed class DashboardRepository : IDashboardRepository
         AssetAgeCutoffs cutoffs,
         CancellationToken cancellationToken = default)
     {
-       
         return await _context.Assets
             .GroupBy(asset =>
                 asset.PurchaseDate > cutoffs.First ? 0 :

@@ -71,7 +71,7 @@ public class DepartmentService : IDepartmentService
 
         await _departmentRepository.UpdateAsync(department, cancellationToken);
 
-        await _cacheService.InvalidateDashboardAsync(cancellationToken);
+        await _cacheService.InvalidateDashboardAsync(departmentId, cancellationToken);
 
         return department.ToDepartmentResponse();
     }

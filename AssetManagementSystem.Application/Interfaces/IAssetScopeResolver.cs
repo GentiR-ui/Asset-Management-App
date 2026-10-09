@@ -4,5 +4,5 @@ namespace AssetManagementSystem.Application.Interfaces;
 
 public interface IAssetScopeResolver
 {
-    AssetQueryScope ResolveScope();
+    Task<AssetQueryScope> ResolveScopeAsync(CancellationToken cancellationToken = default);
 }

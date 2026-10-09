@@ -4,6 +4,8 @@ namespace AssetManagementSystem.Domain.Interfaces;
 
 public interface IDashboardRepository
 {
+    // Pa parameter departamenti: kufizimi sipas departamentit zbatohet nga global
+    // query filter-i mbi Asset (shih ApplicationDbContext). Nje rregull, nje vend.
     Task<AssetValueSummary> AssetValueSummaryAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(CancellationToken cancellationToken = default);

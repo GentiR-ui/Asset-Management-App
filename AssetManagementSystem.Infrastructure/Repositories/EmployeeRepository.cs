@@ -36,12 +36,17 @@ public class EmployeeRepository : IEmployeeRepository
         return await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
     }
 
-    public async Task<PagedResult<Employee>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Employee>> GetPagedAsync(int page, int pageSize, Guid? departmentId, CancellationToken cancellationToken = default)
     {
         var query = _context.Employees
             .Include(employee => employee.Department)
             .Include(employee => employee.User)
             .AsNoTracking();
+
+        if (departmentId is not null)
+        {
+            query = query.Where(employee => employee.DepartmentId == departmentId);
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
 

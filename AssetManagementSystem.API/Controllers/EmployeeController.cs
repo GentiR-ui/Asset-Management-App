@@ -39,6 +39,9 @@ public sealed class EmployeeController : ApiControllerBase
     }
 
     
+    // Cikli i jetes se nje punonjesi i takon Adminit. IT-Manager-i merret me pajisje,
+    // dhe pas rojeve te scope-it do t'i mbetej vetem riemertimi i EmployeeCode.
+    [Authorize(Roles = AppRoles.Admin)]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateEmployeeRequest request, CancellationToken cancellationToken)
     {

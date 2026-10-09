@@ -11,7 +11,8 @@ public interface IEmployeeRepository
 
     Task<Employee?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<PagedResult<Employee>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    /// <summary>departmentId null = pa filter (Admin). Me vlere = vetem ai departament.</summary>
+    Task<PagedResult<Employee>> GetPagedAsync(int page, int pageSize, Guid? departmentId, CancellationToken cancellationToken = default);
 
     Task AddAsync(Employee employee, CancellationToken cancellationToken = default);
 

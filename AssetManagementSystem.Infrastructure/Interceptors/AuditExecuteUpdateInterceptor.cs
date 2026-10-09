@@ -1,18 +1,17 @@
 using System.Linq.Expressions;
-using System.Security.Claims;
 using AssetManagementSystem.Domain.Common;
-using Microsoft.AspNetCore.Http;
+using AssetManagementSystem.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace AssetManagementSystem.Infrastructure.Interceptors;
 
 public sealed class AuditExecuteUpdateInterceptor : IQueryExpressionInterceptor
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ICurrentUserService _currentUser;
 
-    public AuditExecuteUpdateInterceptor(IHttpContextAccessor httpContextAccessor)
+    public AuditExecuteUpdateInterceptor(ICurrentUserService currentUser)
     {
-        _httpContextAccessor = httpContextAccessor;
+        _currentUser = currentUser;
     }
 
     public Expression QueryCompilationStarting(Expression query, QueryExpressionEventData eventData)
@@ -50,9 +49,10 @@ public sealed class AuditExecuteUpdateInterceptor : IQueryExpressionInterceptor
                 Expression.Property(null, typeof(DateTime), nameof(DateTime.UtcNow)));
         }
 
-        // 2. Shto automatikisht UpdatedBy per kete kerkesed (Scoped me IHttpContextAccessor)
-        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (Guid.TryParse(userIdClaim, out var userId) && entityType.GetProperty(nameof(BaseEntity.UpdatedBy)) != null)
+        // 2. Shto automatikisht UpdatedBy. Userin e lexon ICurrentUserService — i njejti
+        // burim si ApplyAuditFields, qe dy rruget e shkrimit te mos divergjojne.
+        var userId = _currentUser.UserId;
+        if (userId != Guid.Empty && entityType.GetProperty(nameof(BaseEntity.UpdatedBy)) != null)
         {
             body = AppendSetProperty(
                 body,

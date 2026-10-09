@@ -7,14 +7,14 @@ namespace AssetManagementSystem.Application.Interfaces;
 
 public interface IAssetService
 {
-    Task<ErrorOr<AssetResponse>> CreateAsync(CreateAssetRequest request, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
+    Task<ErrorOr<AssetResponse>> CreateAsync(CreateAssetRequest request, CancellationToken cancellationToken = default);
     Task<PagedResponse<AssetResponse>> GetPagedAsync(AssetQueryRequest request, CancellationToken cancellationToken = default);
     Task<ErrorOr<AssetResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<ErrorOr<AssetResponse>> UpdateAsync(Guid id, UpdateAssetRequest request, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
-    Task<ErrorOr<Success>> DeleteAsync(Guid id, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
-    Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(Guid assetId, AssignAssetRequest request, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
-    Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(Guid assetId, CancellationToken cancellationToken = default, ICacheService _cacheService = default!);
-    Task<ErrorOr<Success>> TransferAssetToDepartmentAsync(Guid assetId, Guid newDepartmentId, CancellationToken cancellationToken = default!,ICacheService cacheService = default!);
-    Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(Guid departmentId, CancellationToken cancellationToken = default, ICacheService cacheService = default!);
+    Task<ErrorOr<AssetResponse>> UpdateAsync(Guid id, UpdateAssetRequest request, CancellationToken cancellationToken = default);
+    Task<ErrorOr<Success>> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(Guid assetId, AssignAssetRequest request, CancellationToken cancellationToken = default);
+    Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(Guid assetId, CancellationToken cancellationToken = default);
+    Task<ErrorOr<Success>> TransferAssetToDepartmentAsync(Guid assetId, Guid newDepartmentId, CancellationToken cancellationToken = default);
+    Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(Guid departmentId, CancellationToken cancellationToken = default);
 }
 

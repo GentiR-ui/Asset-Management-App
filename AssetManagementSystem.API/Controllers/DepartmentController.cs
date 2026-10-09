@@ -19,6 +19,8 @@ public sealed class DepartmentController : ApiControllerBase
         _departmentService = departmentService;
     }
 
+    // Departamentet jane struktura e kompanise, jo pune operacionale: i menaxhon Admini.
+    [Authorize(Roles = AppRoles.Admin)]
     [HttpPost]
     public async Task<IActionResult> Create(CreateDepartmentRequest request, CancellationToken cancellationToken)
     {
@@ -43,7 +45,7 @@ public sealed class DepartmentController : ApiControllerBase
         return Success(departments);
     }
 
-    
+        [Authorize(Roles = AppRoles.Admin)]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateDepartmentRequest request, CancellationToken cancellationToken)
     {

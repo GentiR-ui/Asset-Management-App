@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using AssetManagementSystem.Application.Interfaces;
+using AssetManagementSystem.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 
 namespace AssetManagementSystem.Application.Services;
@@ -26,13 +26,4 @@ public sealed class CurrentUserService : ICurrentUserService
     }
 
     public string Role => User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-
-    public Guid? DepartmentId
-    {
-        get
-        {
-            var deptClaim = User?.FindFirstValue("department_id");
-            return Guid.TryParse(deptClaim, out var id) ? id : null;
-        }
-    }
 }

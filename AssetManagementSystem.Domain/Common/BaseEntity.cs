@@ -6,6 +6,8 @@ public abstract class BaseEntity
 
     public DateTime CreatedAt { get; protected set; }
 
+    public Guid CreatedBy { get; protected set; }
+
     public DateTime? UpdatedAt { get; protected set; }
 
     public Guid? UpdatedBy { get; protected set; }
@@ -14,11 +16,8 @@ public abstract class BaseEntity
 
     {
         Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
+      
     }
 
-    public void Update()
-    {
-        UpdatedAt = DateTime.UtcNow;
-    }
+    
 }

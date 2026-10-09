@@ -70,10 +70,7 @@ public class AuthService : IAuthService
     {
         var roles = await _identityProvider.GetRolesAsync(user);
         
-        var employee = await _employeeRepository.GetByUserIdAsync(user.Id);
-        Guid? departmentId = employee?.DepartmentId;
-
-        var accessToken = _tokenService.GenerateToken(user,roles, departmentId);
+        var accessToken = _tokenService.GenerateToken(user, roles);
 
         return user.ToAuthResponse(accessToken, roles);
     }

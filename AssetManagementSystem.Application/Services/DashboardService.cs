@@ -30,12 +30,15 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<AssetValueSummaryResponse> GetAssetValueSummaryAsync(CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
+        // Scope-i i duhet vetem celesit: dy menaxhere duhet te kene hyrje te ndara ne cache.
+        // Filtrimi i rreshtave behet nga global query filter-i, jo nga ky shtres.
         var cacheKey = CacheKeys.ForScope(CacheKeys.TotalValue, scope);
 
         return await GetOrSetAsync(cacheKey, async () =>
         {
+
             var summary = await _dashboardRepository.AssetValueSummaryAsync(cancellationToken);
 
             return summary.ToAssetValueSummaryResponse();
@@ -44,7 +47,7 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<DepartmentValueResponse>> GetValueByDepartmentAsync(CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         var cacheKey = CacheKeys.ForScope(CacheKeys.ByDepartment, scope);
 
@@ -58,7 +61,7 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<StatusValueResponse>> GetAssetsByStatusAsync(CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         var cacheKey = CacheKeys.ForScope(CacheKeys.ByStatus, scope);
 
@@ -72,7 +75,7 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<CategoryValueResponse>> GetAssetsByCategoryAsync(CancellationToken cancellationToken = default)
     {
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
 
         var cacheKey = CacheKeys.ForScope(CacheKeys.ByCategory, scope);
 
@@ -86,7 +89,7 @@ public sealed class DashboardService : IDashboardService
 
     public async Task<IReadOnlyList<AgeValueResponse>> GetAssetAgeDistributionAsync(CancellationToken cancellationToken = default)
     {   
-        var scope = _scopeResolver.ResolveScope();
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
         
         var cacheKey = CacheKeys.ForScope(CacheKeys.Age, scope);
         
