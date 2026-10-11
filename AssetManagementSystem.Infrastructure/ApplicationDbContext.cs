@@ -26,6 +26,7 @@ public class ApplicationDbContext
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

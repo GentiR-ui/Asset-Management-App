@@ -1,27 +1,21 @@
 using AssetManagementSystem.Application.DTOs.Employees;
-using AssetManagementSystem.Domain.Entities;
+using AssetManagementSystem.Domain.ReadModels;
 
 namespace AssetManagementSystem.Application.Common.Mappings;
 
 public static class EmployeeMappings
 {
-    /// <summary>
-    /// Kerkon qe User dhe Department te jene te ngarkuar (Include) ose te vendosur me dore.
-    /// Pa to hedh NullReferenceException.
-    /// </summary>
-    public static EmployeeResponse ToEmployeeResponse(this Employee employee)
+    /// <summary>Nga read model-i: asnje navigim, asnje rrezik NullReferenceException.</summary>
+    public static EmployeeResponse ToEmployeeResponse(this EmployeeListItem item) => new()
     {
-        return new EmployeeResponse
-        {
-            Id = employee.Id,
-            EmployeeCode = employee.EmployeeCode,
-            FirstName = employee.User.FirstName,
-            LastName = employee.User.LastName,
-            Email = employee.User.Email ?? string.Empty,
-            UserId = employee.UserId,
-            DepartmentId = employee.DepartmentId,
-            DepartmentName = employee.Department.Name,
-            CreatedAt = employee.CreatedAt
-        };
-    }
+        Id = item.Id,
+        EmployeeCode = item.EmployeeCode,
+        FirstName = item.FirstName,
+        LastName = item.LastName,
+        Email = item.Email,
+        UserId = item.UserId,
+        DepartmentId = item.DepartmentId,
+        DepartmentName = item.DepartmentName,
+        CreatedAt = item.CreatedAt
+    };
 }

@@ -1,4 +1,6 @@
 using System.Text;
+using Hangfire;
+using Hangfire.SqlServer;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
 using AssetManagementSystem.Infrastructure.Authorization;
@@ -42,6 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailSender, LoggingEmailSender>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ITransactionRunner, TransactionRunner>();
         services.AddScoped<IScopeContext, ScopeContext>();
@@ -60,6 +63,8 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<AuditExecuteUpdateInterceptor>());
         });
 
+        AddHangfireProcessing(services, configuration);
+
 
 
 
@@ -71,6 +76,42 @@ public static class ServiceCollectionExtensions
         
 
         return services;
+    }
+
+    /// <summary>
+    /// Hangfire ruan gjendjen e job-eve ne SQL Server — ne te njejten databaze.
+    /// Pikerisht kjo e ndan nga BackgroundService: orari dhe historiku i mbijetojne
+    /// rinisjes se aplikacionit, sepse nuk jetojne ne memorie.
+    ///
+    /// Skema [HangFire] krijohet vetvetiu ne nisjen e pare — pa migrim, pa SQL me dore.
+    /// </summary>
+    private static void AddHangfireProcessing(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(
+                configuration.GetConnectionString("DefaultConnection"),
+                new SqlServerStorageOptions
+                {
+                    // Zero: merr job-in sapo shfaqet, pa pritur ciklin e radhes.
+                    QueuePollInterval = TimeSpan.Zero,
+
+                    // Nese procesi bie mes ekzekutimit, job-i rikthehet ne rend pas 5 minutash.
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    UseRecommendedIsolationLevel = true,
+
+                    // Pa lock global: lejon disa servera Hangfire paralel pa bllokime ne tabela.
+                    DisableGlobalLocks = true
+                }));
+
+        // Serveri eshte ai qe EKZEKUTON. Pa te, job-et ruhen ne databaze dhe presin pa fund.
+        services.AddHangfireServer();
     }
 
     private static void AddJwtAuthentication(

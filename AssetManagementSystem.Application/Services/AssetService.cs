@@ -82,7 +82,13 @@ public sealed class AssetService : IAssetService
 
         await _cacheService.InvalidateDashboardAsync(asset.DepartmentId, cancellationToken);
 
-        return asset.ToAssetResponse();
+        // Rilexim me projeksion, njesoj si te UpdateAsync. Pergjigjja kerkon DepartmentName,
+        // dhe entiteti i sapokrijuar e ka navigimin Department te mbushur vetem per shkak te
+        // relationship fixup-it — sepse departamenti u lexuar i gjurmuar me lart. Nje
+        // .AsNoTracking() te DepartmentRepository.GetByIdAsync do e thyente ketu, pa lidhje.
+        var created = await _assetRepository.GetByIdWithDetailsAsync(asset.Id, cancellationToken);
+
+        return created!.ToAssetResponse();
     }
 
     public async Task<ErrorOr<AssetResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

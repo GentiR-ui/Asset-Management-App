@@ -89,9 +89,10 @@ public sealed class WarrantyExpireBackgroundService : BackgroundService
 
         foreach (var asset in expiringAssets)
         {
-            var expiry = asset.WarrantyExpiryDate?.ToString("yyyy-MM-dd") ?? "N/A";
-            var dept = asset.Department?.Name ?? "Pa departament";
-            emailBody.AppendLine($"- [{asset.AssetTag}] {asset.Name} | Garancia: {expiry} | Departamenti: {dept}");
+            emailBody.AppendLine(
+                $"- [{asset.AssetTag}] {asset.Name} "
+                + $"| Garancia: {asset.WarrantyExpiryDate:yyyy-MM-dd} "
+                + $"| Departamenti: {asset.DepartmentName}");
         }
 
         emailBody.AppendLine("\nJu lutemi merrni masat e nevojshme me furnitorët.");

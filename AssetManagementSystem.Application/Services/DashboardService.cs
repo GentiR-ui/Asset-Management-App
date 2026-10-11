@@ -53,7 +53,11 @@ public sealed class DashboardService : IDashboardService
 
         return await GetOrSetAsync(cacheKey, async () =>
         {
-            var values = await _dashboardRepository.AssetValuesByDepartmentAsync(cancellationToken);
+            // Ky raport shkon permes stored procedure, pra filtri global nuk zbatohet:
+            // scope-i duhet kaluar me dore. Raportet e tjera e marrin vetvetiu.
+            var departmentId = scope.IsGlobal ? null : scope.DepartmentId;
+
+            var values = await _dashboardRepository.AssetValuesByDepartmentAsync(departmentId, cancellationToken);
 
             return values.Select(value => value.ToDepartmentValueResponse()).ToList();
         }, cancellationToken);

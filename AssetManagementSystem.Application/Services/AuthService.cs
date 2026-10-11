@@ -15,13 +15,23 @@ public class AuthService : IAuthService
     private readonly IEmailSender _emailSender;
     private readonly ITokenService _tokenService;
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly ICurrentUserService _currentUser;
 
-    public AuthService(IIdentityProvider identityProvider, IEmailSender emailSender, ITokenService tokenService, IEmployeeRepository employeeRepository)
+    public AuthService(
+        IIdentityProvider identityProvider,
+        IEmailSender emailSender,
+        ITokenService tokenService,
+        IEmployeeRepository employeeRepository,
+        IRefreshTokenRepository refreshTokenRepository,
+        ICurrentUserService currentUser)
     {
         _identityProvider = identityProvider;
         _emailSender = emailSender;
         _tokenService = tokenService;
         _employeeRepository = employeeRepository;
+        _refreshTokenRepository = refreshTokenRepository;
+        _currentUser = currentUser;
     }
 
 
@@ -66,13 +76,93 @@ public class AuthService : IAuthService
         return await BuildAuthResponseAsync(user);
     }
 
+    /// <summary>
+    /// Shkembimi i refresh token-it per nje cift te re.
+    ///
+    /// Rotacioni nuk eshte formalitet: token-i i vjeter revokohet gjithmone. Nese nje
+    /// token i revokuar vjen perseri, ose eshte vjedhur ose po riperdoret — dhe pergjigja
+    /// e vetme e sigurt eshte shuarja e te gjithe sesioneve te atij useri.
+    /// </summary>
+    public async Task<ErrorOr<AuthResponse>> RefreshAsync(
+        RefreshRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var hash = _tokenService.HashRefreshToken(request.RefreshToken);
+
+        var stored = await _refreshTokenRepository.GetByHashAsync(hash, cancellationToken);
+
+        if (stored is null)
+        {
+            return AuthErrors.InvalidRefreshToken;
+        }
+
+        // Riperdorim i nje token-i te revokuar: shenje vjedhjeje. Shuaj gjithcka.
+        if (stored.RevokedAtUtc is not null)
+        {
+            await _refreshTokenRepository.RevokeAllForUserAsync(stored.UserId, cancellationToken);
+
+            return AuthErrors.InvalidRefreshToken;
+        }
+
+        if (stored.ExpiresAtUtc <= DateTime.UtcNow)
+        {
+            return AuthErrors.InvalidRefreshToken;
+        }
+
+        var user = await _identityProvider.FindByIdAsync(stored.UserId);
+
+        if (user is null)
+        {
+            return AuthErrors.InvalidRefreshToken;
+        }
+
+        var roles = await _identityProvider.GetRolesAsync(user);
+        var accessToken = _tokenService.GenerateToken(user, roles);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        await _refreshTokenRepository.RotateAsync(
+            stored,
+            new RefreshToken
+            {
+                TokenHash = refreshToken.Hash,
+                UserId = user.Id,
+                ExpiresAtUtc = refreshToken.ExpiresAtUtc
+            },
+            cancellationToken);
+
+        return user.ToAuthResponse(accessToken, refreshToken, roles);
+    }
+
+    /// <summary>
+    /// Revokon te gjithe refresh token-et e userit. Access token-i aktual punon deri sa
+    /// skadon — per kete ExpiryMinutes eshte 15, jo 60.
+    /// </summary>
+    public async Task<ErrorOr<Success>> LogoutAsync(CancellationToken cancellationToken = default)
+    {
+        // Idempotent: logout dy here kthen sukses, nuk kthen gabim.
+        await _refreshTokenRepository.RevokeAllForUserAsync(_currentUser.UserId, cancellationToken);
+
+        return Result.Success;
+    }
+
     private async Task<AuthResponse> BuildAuthResponseAsync(User user)
     {
         var roles = await _identityProvider.GetRolesAsync(user);
-        
-        var accessToken = _tokenService.GenerateToken(user, roles);
 
-        return user.ToAuthResponse(accessToken, roles);
+        var accessToken = _tokenService.GenerateToken(user, roles);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        // Ruhet hash-i; vlera e papërpunuar kthehet vetem ne pergjigje dhe harrohet.
+        await _refreshTokenRepository.AddAsync(
+            new RefreshToken
+            {
+                TokenHash = refreshToken.Hash,
+                UserId = user.Id,
+                ExpiresAtUtc = refreshToken.ExpiresAtUtc
+            },
+            CancellationToken.None);
+
+        return user.ToAuthResponse(accessToken, refreshToken, roles);
     }
 
     public async Task<ErrorOr<Success>> ConfirmEmailAsync(ConfirmEmailRequest request)

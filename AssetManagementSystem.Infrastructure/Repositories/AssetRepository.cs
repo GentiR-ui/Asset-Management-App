@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Linq.Expressions;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Enums;
 using AssetManagementSystem.Domain.Interfaces;
@@ -20,27 +21,49 @@ public sealed class AssetRepository : IAssetRepository
     }
 
 
+    /// <summary>
+    /// Projeksioni, ne nje vend te vetem: e perdorin edhe GetByIdWithDetailsAsync edhe
+    /// GetPagedAsync, pra nje fushe e re shtohet vetem njehere.
+    ///
+    /// Brenda ketij Select, "asset.Department.Name" NUK eshte dereferencim objekti — eshte
+    /// udhezim per SQL, dhe EF-i e perkthen ne LEFT JOIN. Per kete navigimi nuk mund te
+    /// jete null ne heshtje, si ndodhte kur Include-i mungonte.
+    /// </summary>
+    private static readonly Expression<Func<Asset, AssetListItem>> ToListItem =
+        asset => new AssetListItem(
+            asset.Id,
+            asset.AssetTag,
+            asset.Name,
+            asset.Category,
+            asset.SerialNumber,
+            asset.Status,
+            asset.PurchaseDate,
+            asset.PurchasePrice,
+            asset.WarrantyExpiryDate,
+            asset.Notes,
+            asset.CreatedAt,
+            asset.DepartmentId,
+            asset.Department.Name,
+            asset.AssignedToEmployeeId,
+            asset.AssignedToEmployee == null
+                ? null
+                : asset.AssignedToEmployee.User.FirstName + " " + asset.AssignedToEmployee.User.LastName);
+
     public async Task<Asset?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Assets.FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
 
     
-    // Me Include dhe pa gjurmim: vetem per lexim.
-    public async Task<Asset?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default) =>
+    // Projeksion: pa Include, pa AsNoTracking. Rezultati nuk eshte entitet.
+    public async Task<AssetListItem?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Assets
-            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
-            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
-            .Include(a => a.Department)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
+            .Where(asset => asset.Id == id)
+            .Select(ToListItem)
+            .FirstOrDefaultAsync(cancellationToken);
 
-    public async Task<PagedResult<Asset>> GetPagedAsync(AssetFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<AssetListItem>> GetPagedAsync(AssetFilter filter, CancellationToken cancellationToken = default)
     {
         // Asgje nuk ekzekutohet ketu: cdo Where vetem e ndertohet mbi IQueryable.
-        var query = _context.Assets
-            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.User)
-            .Include(asset => asset.AssignedToEmployee!).ThenInclude(employee => employee.Department)
-            .Include(a => a.Department)
-            .AsNoTracking();
+        var query = _context.Assets.AsQueryable();
 
         if (filter.Category is not null)
         {
@@ -67,13 +90,16 @@ public sealed class AssetRepository : IAssetRepository
 
         // OrderBy eshte i detyrueshem: pa te, SQL Server nuk garanton rend
         // dhe faqja 2 mund te perserise rreshta te faqes 1, pa asnje gabim.
+        // Select vjen PAS Skip/Take: projeksioni zbatohet vetem mbi rreshtat e faqes,
+        // jo mbi te gjithe rezultatin e filtruar.
         var items = await query
             .OrderBy(asset => asset.AssetTag)
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
+            .Select(ToListItem)
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<Asset>(items, totalCount);
+        return new PagedResult<AssetListItem>(items, totalCount);
     }
 
     public async Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default) =>
@@ -124,19 +150,23 @@ public sealed class AssetRepository : IAssetRepository
                 cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Asset>> GetExpiringWarrantiesAsync(
-    int daysThreshold, 
-    CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ExpiringWarrantyItem>> GetExpiringWarrantiesAsync(
+        int daysThreshold,
+        CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
         var cutoffDate = now.AddDays(daysThreshold);
 
         return await _context.Assets
-            .Where(a => a.WarrantyExpiryDate.HasValue 
-                    && a.WarrantyExpiryDate.Value >= now 
-                    && a.WarrantyExpiryDate.Value <= cutoffDate)
-            .OrderBy(a => a.WarrantyExpiryDate)
-            .AsNoTracking()
+            .Where(asset => asset.WarrantyExpiryDate.HasValue
+                         && asset.WarrantyExpiryDate.Value >= now
+                         && asset.WarrantyExpiryDate.Value <= cutoffDate)
+            .OrderBy(asset => asset.WarrantyExpiryDate)
+            .Select(asset => new ExpiringWarrantyItem(
+                asset.AssetTag,
+                asset.Name,
+                asset.WarrantyExpiryDate!.Value,
+                asset.Department.Name))
             .ToListAsync(cancellationToken);
     }
 

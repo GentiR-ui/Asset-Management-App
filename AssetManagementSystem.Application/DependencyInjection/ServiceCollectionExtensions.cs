@@ -31,7 +31,14 @@ public static class ServiceCollectionExtensions
         // mund te konsumoje Scoped (captive dependency) dhe .NET-i nuk niset fare.
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
 
-        services.AddHostedService<WarrantyExpireBackgroundService>();
+        // Job-i i garancive: Scoped, sepse Hangfire krijon nje scope per cdo ekzekutim.
+        services.AddScoped<IWarrantyExpireJob, WarrantyExpireJob>();
+        services.AddScoped<IRefreshTokenCleanupJob, RefreshTokenCleanupJob>();
+
+        // JASHTE PERDORIMIT: oraret i mban Hangfire tani (shih Program.cs).
+        // Klasa WarrantyExpireBackgroundService mbetet ne kod vetem per krahasim;
+        // nese regjistrohet bashke me job-in, njoftimi dergohet DY here.
+        // services.AddHostedService<WarrantyExpireBackgroundService>();
         
         var redisConnection = configuration.GetConnectionString("Redis");
 

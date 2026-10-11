@@ -70,9 +70,25 @@ public sealed class AuthController : ApiControllerBase
         return HandleResult(result, "Password has been reset. You can now sign in with your new password.");
     }
 
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshRequest request, CancellationToken cancellationToken)
+    {
+        // AllowAnonymous me qellim: /refresh thirret pikerisht kur access token-i ka skaduar.
+        // Autorizimi behet nga refresh token-i i trupit, i cili kerkohet ne databaze.
+        var result = await _authService.RefreshAsync(request, cancellationToken);
+
+        return HandleResult(result);
+    }
+
     [Authorize]
     [HttpPost("logout")]
-    public IActionResult Logout() => Success("Logged out successfully.");
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        var result = await _authService.LogoutAsync(cancellationToken);
+
+        return HandleResult(result, "Logged out successfully.");
+    }
 
 
 

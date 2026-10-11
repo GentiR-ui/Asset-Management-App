@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
 using AssetManagementSystem.Domain.ReadModels;
@@ -15,19 +16,35 @@ public class EmployeeRepository : IEmployeeRepository
     }
 
     
+    /// <summary>
+    /// Projeksioni ne nje vend te vetem, i perdorur nga GetByIdWithDetailsAsync dhe GetPagedAsync.
+    /// Brenda Select-it, employee.User.FirstName eshte udhezim per SQL (JOIN), nuk dereferencim.
+    /// </summary>
+    private static readonly Expression<Func<Employee, EmployeeListItem>> ToListItem =
+        employee => new EmployeeListItem(
+            employee.Id,
+            employee.EmployeeCode,
+            employee.User.FirstName,
+            employee.User.LastName,
+            employee.User.Email ?? string.Empty,
+            employee.UserId,
+            employee.DepartmentId,
+            employee.Department.Name,
+            employee.CreatedAt);
+
     public async Task<Employee?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Employees.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
     
-    public async Task<Employee?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    // Projeksion: pa Include, pa AsNoTracking. Rezultati nuk eshte entitet.
+    public async Task<EmployeeListItem?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Employees
-            .Include(employee => employee.Department)
-            .Include(employee => employee.User)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            .Where(employee => employee.Id == id)
+            .Select(ToListItem)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     // Pa AsNoTracking: ky entitet do te fshihet, prandaj duhet i gjurmuar.
@@ -36,12 +53,9 @@ public class EmployeeRepository : IEmployeeRepository
         return await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
     }
 
-    public async Task<PagedResult<Employee>> GetPagedAsync(int page, int pageSize, Guid? departmentId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<EmployeeListItem>> GetPagedAsync(int page, int pageSize, Guid? departmentId, CancellationToken cancellationToken = default)
     {
-        var query = _context.Employees
-            .Include(employee => employee.Department)
-            .Include(employee => employee.User)
-            .AsNoTracking();
+        var query = _context.Employees.AsQueryable();
 
         if (departmentId is not null)
         {
@@ -50,13 +64,15 @@ public class EmployeeRepository : IEmployeeRepository
 
         var totalCount = await query.CountAsync(cancellationToken);
 
+        // Select vjen PAS Skip/Take: projeksioni zbatohet vetem mbi rreshtat e faqes.
         var items = await query
             .OrderBy(employee => employee.EmployeeCode)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(ToListItem)
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<Employee>(items, totalCount);
+        return new PagedResult<EmployeeListItem>(items, totalCount);
     }
 
     public async Task AddAsync(Employee employee, CancellationToken cancellationToken = default)

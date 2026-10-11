@@ -12,5 +12,9 @@ public sealed record AuthResponse
 
     public required DateTime ExpiresAtUtc { get; init; }
 
+    public required string RefreshToken { get; init; }
+
+    public required DateTime RefreshTokenExpiresAtUtc { get; init; }
+
     public required IReadOnlyList<string> Roles { get; init; }
 }

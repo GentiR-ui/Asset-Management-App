@@ -31,31 +31,19 @@ public sealed class DashboardRepository : IDashboardRepository
         return summary ?? new AssetValueSummary(0, 0m);
     }
 
-    public async Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Assets
-            .GroupBy(asset => new
-            {
-                Id = (Guid?)asset.DepartmentId,
-                Name = asset.Department.Name
-            })
-            .OrderBy(group => group.Key.Name)
-            .Select(group => new DepartmentAssetValue(
-                group.Key.Id,
-                group.Key.Name,
-                group.Count(),
-                group.Sum(asset => asset.PurchasePrice)))
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentSpAsync(
-    CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(
+        Guid? departmentId,
+        CancellationToken cancellationToken = default)
     {
         // Lidhja e EF-it, jo nje e dyte: i njejti connection string dhe i njejti pool.
         var connection = _context.Database.GetDbConnection();
 
+        // @DepartmentId mban scope-in. Rregulli "cili departament i takon kujt" jeton
+        // ne AssetScopeResolver; ketu kalohet vetem PERGJIGJA e tij. Nje burim i vertetes,
+        // por pa rrjeten e sigurise se filtrit global — harresa ketu nuk ka asnje alarm.
         var command = new CommandDefinition(
             "dbo.GetAssetValueByDepartment",
+            parameters: new { DepartmentId = departmentId },
             commandType: CommandType.StoredProcedure,
             cancellationToken: cancellationToken);
 

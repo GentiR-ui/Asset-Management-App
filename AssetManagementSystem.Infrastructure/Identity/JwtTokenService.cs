@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Text;
 using AssetManagementSystem.Domain.Common;
@@ -46,5 +47,26 @@ public sealed class JwtTokenService : ITokenService
         return new AccessToken(
             new JwtSecurityTokenHandler().WriteToken(token),
             expiresAt);
+    }
+
+    public RefreshTokenValue GenerateRefreshToken()
+    {
+        // 64 byte nga burimi kriptografik i sistemit: i paparashikueshem, ndryshe nga Guid-i.
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        var value = Convert.ToBase64String(bytes);
+
+        return new RefreshTokenValue(
+            value,
+            HashRefreshToken(value),
+            DateTime.UtcNow.AddDays(_settings.RefreshTokenDays));
+    }
+
+    public string HashRefreshToken(string rawToken)
+    {
+        // SHA-256 pa salt, me qellim: token-i ka 64 byte entropie, pra nuk rrezikohet nga
+        // rainbow tables si fjalekalimet. Salt-i do e bente kerkimin me hash te pamundur.
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
+
+        return Convert.ToHexString(hash);
     }
 }

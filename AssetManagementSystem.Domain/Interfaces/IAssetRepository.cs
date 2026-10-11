@@ -7,9 +7,13 @@ public interface IAssetRepository
 {
     Task<Asset?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<Asset?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Kthen read model, jo entitet: ky rezultat shkon drejt ne pergjigje dhe nuk
+    /// modifikohet kurre. Per shkrim perdor GetByIdAsync, qe kthen entitet te gjurmuar.
+    /// </summary>
+    Task<AssetListItem?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<PagedResult<Asset>> GetPagedAsync(AssetFilter filter, CancellationToken cancellationToken = default);
+    Task<PagedResult<AssetListItem>> GetPagedAsync(AssetFilter filter, CancellationToken cancellationToken = default);
 
     Task<bool> AssetTagExistsAsync(string assetTag, CancellationToken cancellationToken = default);
 
@@ -22,5 +26,6 @@ public interface IAssetRepository
 
     Task<bool> HasAssetsAssignedToEmployeeAsync(Guid employeeId, CancellationToken cancellationToken = default);
     Task UnassignAssetsByDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Asset>> GetExpiringWarrantiesAsync(int daysThreshold, CancellationToken cancellationToken);
+    /// <summary>Read model: email-i perdor kater fusha, pra query-ja kerkon kater kolona.</summary>
+    Task<IReadOnlyList<ExpiringWarrantyItem>> GetExpiringWarrantiesAsync(int daysThreshold, CancellationToken cancellationToken = default);
 }
