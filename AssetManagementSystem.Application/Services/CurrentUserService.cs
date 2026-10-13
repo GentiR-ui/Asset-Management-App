@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Interfaces;
 using System.Security.Claims;
 using AssetManagementSystem.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;

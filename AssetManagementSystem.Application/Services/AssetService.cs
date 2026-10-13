@@ -113,10 +113,25 @@ public sealed class AssetService : IAssetService
         UpdateAssetRequest request,
         CancellationToken cancellationToken = default)
     {
+        var scope = await _scopeResolver.ResolveScopeAsync(cancellationToken);
+
         var asset = await _assetRepository.GetByIdAsync(id, cancellationToken);
         if (asset is null)
         {
             return AssetErrors.NotFound(id);
+        }
+
+        // ⚠️ RRJETE SIGURIE, jo mbrojtja e pare — dhe sot e PAARRITSHME.
+        //
+        // GetByIdAsync lexon nga _context.Assets, pra global query filter-i zbatohet:
+        // aseti i nje departamenti tjeter kthehet NULL dhe metoda del me 404 me lart.
+        // Ky kusht do te ndizej vetem nese filtri global hiqet ose ndryshon.
+        //
+        // Pikerisht per kete, cdo rruge shkrimi mbi Asset e ka te njejten roje — qe heqja
+        // e filtrit nje dite te mos hape nje vrime ne gjysmen e metodave.
+        if (!scope.IsGlobal && asset.DepartmentId != scope.DepartmentId)
+        {
+            return Error.Forbidden(description: "You can only manage assets within your department.");
         }
         var assetTag = request.AssetTag.Trim();
         var serialNumber = request.SerialNumber.Trim();
@@ -229,7 +244,7 @@ public sealed class AssetService : IAssetService
         await _cacheService.InvalidateDashboardAsync(newDepartmentId, cancellationToken);
         return Result.Success;
     }
-    public async Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(
+    public async Task<ErrorOr<Success>> ReleaseAssetsFromEmployeesAsync(
     Guid departmentId,
     CancellationToken cancellationToken = default)
     {
@@ -249,7 +264,7 @@ public sealed class AssetService : IAssetService
             return Error.Forbidden(description: "You can only reset assets in your own department.");
         }
 
-        await _assetRepository.UnassignAssetsByDepartmentAsync(departmentId, cancellationToken);
+        await _assetRepository.ReleaseAssetsFromEmployeesAsync(departmentId, cancellationToken);
         await _cacheService.InvalidateDashboardAsync(departmentId, cancellationToken);
         return Result.Success;
     }

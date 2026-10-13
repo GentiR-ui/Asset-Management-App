@@ -49,6 +49,10 @@ public static class ServiceCollectionExtensions
         // Singleton: interceptori nuk mban gjendje — userin e lexon nga IHttpContextAccessor
         // ne momentin e thirrjes. Si Scoped, EF-i do shihte opsione te reja per cdo kerkese
         // dhe do ndertonte nje service provider te brendshem te re — deri ne crash te 21-tin.
+        // Singleton: pa gjendje, lexon IHttpContextAccessor ne cdo thirrje.
+        // Duhet Singleton sepse interceptori — qe eshte Singleton — e konsumon.
+        services.AddSingleton<CurrentUserAccessor>();
+
         services.AddSingleton<AuditExecuteUpdateInterceptor>();
         // Regjistrimi i VETEM i DbContext-it: nje burim i vertetes per konfigurimin.
         services.AddDbContext<ApplicationDbContext>((sp, options) =>

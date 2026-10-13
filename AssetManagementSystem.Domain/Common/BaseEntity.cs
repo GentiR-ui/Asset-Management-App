@@ -1,5 +1,5 @@
 namespace AssetManagementSystem.Domain.Common;
-public abstract class BaseEntity
+public abstract class BaseEntity : IAuditable
 {
     public Guid Id { get; protected set; }
     public DateTime CreatedAt { get; protected set; }

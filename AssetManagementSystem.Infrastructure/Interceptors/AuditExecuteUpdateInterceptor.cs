@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AssetManagementSystem.Domain.Common;
-using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -18,11 +18,11 @@ namespace AssetManagementSystem.Infrastructure.Interceptors;
 /// </summary>
 public sealed class AuditExecuteUpdateInterceptor : IQueryExpressionInterceptor
 {
-    private readonly ICurrentUserService _currentUser;
+    private readonly CurrentUserAccessor _currentUser;
     private readonly ILogger<AuditExecuteUpdateInterceptor> _logger;
 
     public AuditExecuteUpdateInterceptor(
-        ICurrentUserService currentUser,
+        CurrentUserAccessor currentUser,
         ILogger<AuditExecuteUpdateInterceptor> logger)
     {
         _currentUser = currentUser;

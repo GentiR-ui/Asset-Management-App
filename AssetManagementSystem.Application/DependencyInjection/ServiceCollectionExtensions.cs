@@ -21,11 +21,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IAssetScopeResolver, AssetScopeResolver>();
-        // Singleton: CurrentUserService nuk ruan asnje fushe — userin e llogarit nga
-        // IHttpContextAccessor ne cdo thirrje. Duhet Singleton sepse
-        // AuditExecuteUpdateInterceptor (Singleton) varet nga ai: nje Singleton nuk
-        // mund te konsumoje Scoped (captive dependency) dhe .NET-i nuk niset fare.
-        services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        // Scoped: nuk ka me nevoje per Singleton. Arsyeja e vjeter ishte
+        // AuditExecuteUpdateInterceptor (Singleton), i cili tani e lexon userin
+        // permes CurrentUserAccessor ne Infrastructure.
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         // Job-i i garancive: Scoped, sepse Hangfire krijon nje scope per cdo ekzekutim.
         services.AddScoped<IWarrantyExpireJob, WarrantyExpireJob>();
         services.AddScoped<IRefreshTokenCleanupJob, RefreshTokenCleanupJob>();

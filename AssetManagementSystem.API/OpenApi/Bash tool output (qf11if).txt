@@ -1,0 +1,38 @@
+============ AssetService
+  PA SCOPE       AssetService
+  OK             CreateAsync
+  OK             GetByIdAsync
+  OK             GetPagedAsync
+  PA SCOPE       UpdateAsync
+  PA SCOPE       DeleteAsync
+  OK             AssignAssetToEmployeeAsync
+  OK             UnassignAssetFromEmployeeAsync
+  PA SCOPE       TransferAssetToDepartmentAsync
+  OK             ReleaseAssetsFromEmployeesAsync
+============ EmployeeService
+  PA SCOPE       EmployeeService
+  OK             UpdateEmployeeAsync
+  OK             GetEmployeeByIdAsync
+  OK             GetEmployeesAsync
+============ DepartmentService
+  PA SCOPE       DepartmentService
+  PA SCOPE       CreateDepartmentAsync
+  PA SCOPE       UpdateDepartmentAsync
+  PA SCOPE       GetDepartmentsAsync
+  PA SCOPE       DeleteDepartmentAsync
+============ DashboardService
+  PA SCOPE       DashboardService
+  scope pa roje  GetAssetValueSummaryAsync
+  OK             GetValueByDepartmentAsync
+  scope pa roje  GetAssetsByStatusAsync
+  scope pa roje  GetAssetsByCategoryAsync
+  scope pa roje  GetAssetAgeDistributionAsync
+============ UserService
+  PA SCOPE       UserService
+  PA SCOPE       CreateUserAsync
+  PA SCOPE       GetUsersAsync
+  PA SCOPE       AssignRoleAsync
+  PA SCOPE       RemoveRoleAsync
+  PA SCOPE       UpdateUserAsync
+  PA SCOPE       DeleteUserAsync
+Shell cwd was reset to c:\Users\genti\OneDrive\Desktop\UshtrimPerIntern\Asset-Management-App

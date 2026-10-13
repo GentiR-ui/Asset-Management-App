@@ -18,4 +18,12 @@ public static class DepartmentErrors
     public static Error CannotDeleteWithEmployees(Guid departmentId) => Error.Conflict(
         code: "Department.CannotDeleteWithEmployees",
         description: $"Department '{departmentId}' still has employees. Reassign or delete them first.");
+
+    /// <summary>
+    /// Mbron FK_Assets_Departments_DepartmentId (Restrict). Pa kete kontroll, databaza
+    /// e refuzonte fshirjen me nje gabim te papritur — 500 ne vend te nje 409 te qarte.
+    /// </summary>
+    public static Error CannotDeleteWithAssets(Guid departmentId) => Error.Conflict(
+        code: "Department.CannotDeleteWithAssets",
+        description: $"Department '{departmentId}' still has assets. Transfer them to another department first.");
 }

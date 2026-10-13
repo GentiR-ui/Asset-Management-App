@@ -1,4 +1,4 @@
-namespace AssetManagementSystem.Domain.Interfaces;
+namespace AssetManagementSystem.Application.Interfaces;
 public interface ICacheService
 {
     Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default);

@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Application.Common.Constants;
 using AssetManagementSystem.Domain.Interfaces;
 namespace AssetManagementSystem.Application.Common.Caching;

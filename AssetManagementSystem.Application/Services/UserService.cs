@@ -15,13 +15,16 @@ public class UserService : IUserService
     private readonly IDepartmentRepository _departmentRepository;
     private readonly IAssetRepository _assetRepository;
     private readonly ITransactionRunner _transactionRunner;
-    public UserService(IIdentityProvider identityProvider, IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository, IAssetRepository assetRepository, ITransactionRunner transactionRunner)
+    private readonly IAssetScopeResolver _scopeResolver;
+
+    public UserService(IIdentityProvider identityProvider, IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository, IAssetRepository assetRepository, ITransactionRunner transactionRunner, IAssetScopeResolver scopeResolver)
     {
         _identityProvider = identityProvider;
         _employeeRepository = employeeRepository;
         _departmentRepository = departmentRepository;
         _assetRepository = assetRepository;
         _transactionRunner = transactionRunner;
+        _scopeResolver = scopeResolver;
     }
     public async Task<ErrorOr<UserResponse>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -115,6 +118,21 @@ public class UserService : IUserService
         if (user is null)
         {
             return UserErrors.NotFound(userId);
+        }
+        // Emri dhe mbiemri jetojne te User, prandaj ky endpoint u hap edhe per IT-Manager.
+        // Por nje menaxher guxon te preke vetem ata qe jane punonjes TE DEPARTAMENTIT TE TIJ.
+        //
+        // Nje Admin nuk ka rresht te Employees — AppRoles.Staff permban vetem Employee dhe
+        // IT-Manager — pra employee del null dhe menaxheri merr 403. Mbrojtja e Adminit
+        // vjen nga modeli, jo nga nje kontroll i vecante per rolin.
+        var scope = await _scopeResolver.ResolveScopeAsync();
+        if (!scope.IsGlobal)
+        {
+            var employee = await _employeeRepository.GetByUserIdAsync(userId);
+            if (employee is null || employee.DepartmentId != scope.DepartmentId)
+            {
+                return Error.Forbidden(description: "You can only manage users in your own department.");
+            }
         }
         return await _identityProvider.UpdateUserAsync(
             user, request.FirstName, request.LastName);

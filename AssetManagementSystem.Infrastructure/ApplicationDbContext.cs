@@ -1,6 +1,7 @@
 using AssetManagementSystem.Domain.Common;
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Interfaces;
+using AssetManagementSystem.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +10,11 @@ public class ApplicationDbContext
     : IdentityDbContext<User, UserRole, Guid>
 {
     private readonly IScopeContext _scope;
-    private readonly ICurrentUserService _currentUser;
+    private readonly CurrentUserAccessor _currentUser;
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
         IScopeContext scope,
-        ICurrentUserService currentUser)
+        CurrentUserAccessor currentUser)
         : base(options)
     {
         _scope = scope;
@@ -52,7 +53,9 @@ public class ApplicationDbContext
         var now = DateTime.UtcNow;
         var userId = _currentUser.UserId;
         Guid? currentUserId = userId == Guid.Empty ? null : userId;
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        // IAuditable dhe jo BaseEntity: User nuk e trashegon dot BaseEntity, por e mban
+        // shenjuesin. Trupi mbetet i njejti, sepse vetite kerkohen me EMER, jo me tip.
+        foreach (var entry in ChangeTracker.Entries<IAuditable>())
         {
             switch (entry.State)
             {

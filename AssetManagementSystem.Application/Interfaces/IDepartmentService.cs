@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Department;
 using AssetManagementSystem.Domain.Interfaces;

@@ -28,15 +28,29 @@ public sealed class EmployeeController : ApiControllerBase
         var employees = await _employeeService.GetEmployeesAsync(request, cancellationToken);
         return Success(employees);
     }
-    // Cikli i jetes se nje punonjesi i takon Adminit. IT-Manager-i merret me pajisje,
-    // dhe pas rojeve te scope-it do t'i mbetej vetem riemertimi i EmployeeCode.
-    [Authorize(Roles = AppRoles.Admin)]
+    // Lejohet edhe per IT-Manager, brenda departamentit te vet: DepartmentId u hoq nga
+    // UpdateEmployeeRequest, pra nga ketu nuk mund te leviz askush askund.
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateEmployeeRequest request, CancellationToken cancellationToken)
     {
         var result = await _employeeService.UpdateEmployeeAsync(id, request, cancellationToken);
         return HandleResult(result);
     }
+    // Levizja mes departamenteve eshte vendim organizativ — si transferi i nje aseti.
+    // Admin-only: nje menaxher qe transferonte brenda departamentit te vet s'do kishte
+    // cfare te transferonte.
+    [Authorize(Roles = AppRoles.Admin)]
+    [HttpPost("{id:guid}/transfer-department")]
+    public async Task<IActionResult> TransferDepartment(
+        Guid id,
+        TransferEmployeeRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _employeeService.TransferEmployeeAsync(id, request, cancellationToken);
+
+        return HandleResult(result, "Employee transferred to the new department successfully.");
+    }
+
     // Fshirja behet nga DELETE /api/users/{id}: punonjesi dhe llogaria zhduken bashke,
     // ne nje transaksion, qe te mos mbetet kurre user pa punonjes ose anasjelltas.
 }

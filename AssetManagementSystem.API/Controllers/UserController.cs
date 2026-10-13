@@ -38,6 +38,12 @@ public sealed class UserController : ApiControllerBase
         var result = await _userService.RemoveRoleAsync(userId, roleName);
         return HandleResult(result, "Role removed successfully.");
     }
+    // Emri dhe mbiemri jetojne te User, jo te Employee — pra per t'i ndryshuar te dhenat
+    // e nje punonjesi duhet ky endpoint. Hapet per IT-Manager, dhe UserService kontrollon
+    // qe useri i prekur te jete punonjes i departamentit te tij.
+    //
+    // Nje Admin nuk ka rresht te Employees, pra nje menaxher nuk mund ta prekë kurre.
+    [Authorize(Roles = $"{AppRoles.Admin},{AppRoles.ItManager}")]
     [HttpPut("{userId:guid}")]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
     {

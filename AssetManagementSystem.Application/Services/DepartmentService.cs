@@ -11,10 +11,16 @@ public class DepartmentService : IDepartmentService
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly IEmployeeRepository _employeeRepository;
-    public DepartmentService(IDepartmentRepository departmentRepository, IEmployeeRepository employeeRepository)
+    private readonly IAssetRepository _assetRepository;
+
+    public DepartmentService(
+        IDepartmentRepository departmentRepository,
+        IEmployeeRepository employeeRepository,
+        IAssetRepository assetRepository)
     {
         _departmentRepository = departmentRepository;
         _employeeRepository = employeeRepository;
+        _assetRepository = assetRepository;
     }
     public async Task<ErrorOr<DepartmentResponse>> CreateDepartmentAsync(CreateDepartmentRequest request, CancellationToken cancellationToken = default)
     {
@@ -82,6 +88,14 @@ public class DepartmentService : IDepartmentService
         if (await _employeeRepository.HasEmployeesInDepartmentAsync(departmentId, cancellationToken))
         {
             return DepartmentErrors.CannotDeleteWithEmployees(departmentId);
+        }
+
+        // FK_Assets_Departments_DepartmentId eshte gjithashtu Restrict. Pa kete rresht,
+        // nje departament pa punonjes por me asete kalonte deri te databaza dhe shperthente
+        // me 500. Cdo index unik dhe cdo FK Restrict kerkon nje kontroll perkates ne kod.
+        if (await _assetRepository.AssetAtDepartmentExistsAsync(departmentId, cancellationToken))
+        {
+            return DepartmentErrors.CannotDeleteWithAssets(departmentId);
         }
         await _departmentRepository.RemoveAsync(department, cancellationToken);
         return Result.Success;

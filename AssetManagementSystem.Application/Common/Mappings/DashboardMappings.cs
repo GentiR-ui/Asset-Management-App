@@ -13,6 +13,7 @@ public static class DashboardMappings
         DepartmentId = value.DepartmentId,
         DepartmentName = value.DepartmentName,
         AssetCount = value.AssetCount,
+        AssignedCount = value.AssignedCount,
         TotalValue = value.TotalValue
     };
     // Enum -> string ndodh ketu, jo ne SQL: SQL Server-i nuk i njeh emrat e enum-eve.

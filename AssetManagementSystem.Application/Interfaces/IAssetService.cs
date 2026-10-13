@@ -13,5 +13,9 @@ public interface IAssetService
     Task<ErrorOr<Success>> AssignAssetToEmployeeAsync(Guid assetId, AssignAssetRequest request, CancellationToken cancellationToken = default);
     Task<ErrorOr<Success>> UnassignAssetFromEmployeeAsync(Guid assetId, CancellationToken cancellationToken = default);
     Task<ErrorOr<Success>> TransferAssetToDepartmentAsync(Guid assetId, Guid newDepartmentId, CancellationToken cancellationToken = default);
-    Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(Guid departmentId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Liron te gjitha asetet e nje departamenti nga punonjesit qe i mbajne.
+    /// Emri i vjeter ishte "Reset", qe linte te kuptohej se asetet hiqeshin nga departamenti.
+    /// </summary>
+    Task<ErrorOr<Success>> ReleaseAssetsFromEmployeesAsync(Guid departmentId, CancellationToken cancellationToken = default);
 }

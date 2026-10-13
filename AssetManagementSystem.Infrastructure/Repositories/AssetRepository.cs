@@ -116,7 +116,7 @@ public sealed class AssetRepository : IAssetRepository
         return await _context.Assets
             .AnyAsync(a => a.AssignedToEmployeeId == employeeId, cancellationToken);
     }
-    public async Task UnassignAssetsByDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default)
+    public async Task ReleaseAssetsFromEmployeesAsync(Guid departmentId, CancellationToken cancellationToken = default)
     {
         // AssignedToEmployeeId != null eshte i domosdoshem, jo optimizim.
         // Pa te, UPDATE-i prek CDO aset te departamentit dhe i kthen te gjithe ne InStock —

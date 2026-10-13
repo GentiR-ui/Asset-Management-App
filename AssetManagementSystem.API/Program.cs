@@ -1,4 +1,5 @@
 using AssetManagementSystem.API.Filters;
+using AssetManagementSystem.API.OpenApi;
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.API.Middleware;
 using AssetManagementSystem.Application.DependencyInjection;
@@ -9,7 +10,8 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
@@ -29,7 +31,18 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // AllowAnonymous: FallbackPolicy kerkon user te autentikuar per cdo endpoint,
+    // dhe dokumenti OpenAPI duhet te lexohet para se te besh login.
+    app.MapOpenApi().AllowAnonymous();
+
+    // PARA UseAuthentication, per te njejten arsye si dashboard-i i Hangfire:
+    // /swagger nuk eshte endpoint, pra FallbackPolicy do e ndalonte me 401.
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "Asset Management API v1");
+        options.RoutePrefix = "swagger";
+        options.DocumentTitle = "Asset Management API";
+    });
     await app.SeedDatabaseAsync();
 }
 app.UseHttpsRedirection();

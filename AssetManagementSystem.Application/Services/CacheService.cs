@@ -1,3 +1,4 @@
+using AssetManagementSystem.Application.Interfaces;
 using System.Text.Json;
 using AssetManagementSystem.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;

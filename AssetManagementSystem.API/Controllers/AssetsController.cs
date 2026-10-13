@@ -69,6 +69,12 @@ public sealed class AssetsController : ApiControllerBase
         var result = await _assetService.UnassignAssetFromEmployeeAsync(assetId, cancellationToken);
         return HandleResult(result, "Asset unassigned from employee successfully.");
     }
+// Levizja e nje aseti mes departamenteve eshte vendim organizativ, si levizja e nje
+    // punonjesi — dhe PUT /api/employees eshte Admin-only per te njejten arsye.
+    //
+    // Nje roje scope-i nuk do kishte kuptim ketu: nese menaxheri lejohej te transferonte
+    // vetem brenda departamentit te vet, burimi dhe destinacioni do ishin i njejti.
+    [Authorize(Roles = AppRoles.Admin)]
     [HttpPost("{assetId:guid}/transfer-department")]
     public async Task<IActionResult> TransferDepartment(
         Guid assetId,
@@ -78,12 +84,14 @@ public sealed class AssetsController : ApiControllerBase
         var result = await _assetService.TransferAssetToDepartmentAsync(assetId, request.DepartmentId, cancellationToken);
         return HandleResult(result, "Asset transferred to department successfully.");
     }
-    [HttpPost("departments/{departmentId:guid}/unassign-assets")]
-    public async Task<IActionResult> ResetDepartmentAssets(
+    // "unassign-assets" linte te kuptohej se asetet hiqeshin nga departamenti.
+    // Veprimi i heq nga PUNONJESIT; departamenti i asetit mbetet i njejti.
+    [HttpPost("departments/{departmentId:guid}/release-from-employees")]
+    public async Task<IActionResult> ReleaseAssetsFromEmployees(
         Guid departmentId,
         CancellationToken cancellationToken)
     {
-        var result = await _assetService.ResetDepartmentAssetsAsync(departmentId, cancellationToken);
-        return HandleResult(result, "All assets for department unassigned successfully.");
+        var result = await _assetService.ReleaseAssetsFromEmployeesAsync(departmentId, cancellationToken);
+        return HandleResult(result, "All assets in the department were released from their employees.");
     }
 }
