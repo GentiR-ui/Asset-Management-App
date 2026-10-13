@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.DTOs.Dashboard;
-
 /// <summary>Vlera totale e blerjes per te gjitha asetet, plus sa asete jane.</summary>
 public sealed record AssetValueSummaryResponse
 {

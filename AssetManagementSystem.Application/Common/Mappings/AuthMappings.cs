@@ -1,9 +1,7 @@
 using AssetManagementSystem.Application.DTOs.Auth;
 using AssetManagementSystem.Domain.Common;
 using AssetManagementSystem.Domain.Entities;
-
 namespace AssetManagementSystem.Application.Common.Mappings;
-
 public static class AuthMappings
 {
     public static AuthResponse ToAuthResponse(
@@ -21,6 +19,5 @@ public static class AuthMappings
             RefreshToken = refreshToken.Value,
             RefreshTokenExpiresAtUtc = refreshToken.ExpiresAtUtc,
             Roles = roles.ToList()
-
         };
 }

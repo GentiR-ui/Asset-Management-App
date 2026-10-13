@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Domain.Interfaces;
-
 /// <summary>
 /// Vetem ajo qe mban token-i: identiteti. Departamenti lexohet nga AssetScopeResolver.
 ///
@@ -14,6 +13,5 @@ public interface ICurrentUserService
 {
     /// <summary>Guid.Empty kur nuk ka kerkese HTTP (migrim, seed, background service).</summary>
     Guid UserId { get; }
-
     string Role { get; }
 }

@@ -1,6 +1,5 @@
 using AssetManagementSystem.Application.DTOs.Auth;
 using FluentValidation;
-
 namespace AssetManagementSystem.Application.Validators;
 public sealed class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailRequest>
 {
@@ -10,7 +9,6 @@ public sealed class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmai
         RuleFor(r => r.Token).NotEmpty();
     }
 }
-
 public sealed class ResendConfirmationRequestValidator : AbstractValidator<ResendConfirmationRequest>
 {
     public ResendConfirmationRequestValidator()

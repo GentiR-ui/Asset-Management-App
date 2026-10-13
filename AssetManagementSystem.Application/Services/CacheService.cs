@@ -4,28 +4,22 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.CircuitBreaker;
-
 namespace AssetManagementSystem.Application.Services;
-
 public sealed class CacheService : ICacheService
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
-
     private readonly IDistributedCache _cache;
     private readonly ILogger<CacheService> _logger;
-
     private static readonly AsyncCircuitBreakerPolicy CircuitBreaker = Policy
         .Handle<Exception>(exception => exception is not OperationCanceledException)//per arsye se handleexception kap edhe anulimin kur klienti e anullon, dhe nuk duhet te bejme circuit breaker per kete
         .CircuitBreakerAsync(
             exceptionsAllowedBeforeBreaking: 3,
             durationOfBreak: TimeSpan.FromSeconds(10));
-
     public CacheService(IDistributedCache cache, ILogger<CacheService> logger)
     {
         _cache = cache;
         _logger = logger;
     }
-
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
        /* return await ExecuteSafeAsync(async () =>
@@ -33,7 +27,6 @@ public sealed class CacheService : ICacheService
             var json = await _cache.GetStringAsync(key, cancellationToken);
             return json is null ? default : JsonSerializer.Deserialize<T>(json, SerializerOptions);
         }, key, default(T));*/
-
         try
         {
             return await CircuitBreaker.ExecuteAsync(async () =>
@@ -55,7 +48,6 @@ public sealed class CacheService : ICacheService
             return default;
         }
     }
-
     public async Task SetAsync<T>(string key, T value, TimeSpan ttl, CancellationToken cancellationToken = default)
     {
         await ExecuteSafeAsync(async () =>
@@ -68,7 +60,6 @@ public sealed class CacheService : ICacheService
                 cancellationToken);
         }, key);
     }
-
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         await ExecuteSafeAsync(async () =>
@@ -76,7 +67,6 @@ public sealed class CacheService : ICacheService
             await _cache.RemoveAsync(key, cancellationToken);
         }, key);
     }
-
     private async Task<T?> ExecuteSafeAsync<T>(Func<Task<T?>> action, string key, T? defaultValue = default)
     {
         try
@@ -94,7 +84,6 @@ public sealed class CacheService : ICacheService
             return defaultValue;
         }
     }  
-
     private async Task ExecuteSafeAsync(Func<Task> action, string key)
     {
         await ExecuteSafeAsync<bool>(async () =>
@@ -103,5 +92,4 @@ public sealed class CacheService : ICacheService
             return true;
         }, key, false);
     }
-    
 }

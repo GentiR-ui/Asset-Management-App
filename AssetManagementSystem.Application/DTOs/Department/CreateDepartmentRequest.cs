@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.DTOs.Department;
-
 public sealed record CreateDepartmentRequest
 {
     public string Name { get; init; } = string.Empty;

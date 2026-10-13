@@ -1,8 +1,6 @@
 using AssetManagementSystem.Application.DTOs.Assets;
 using AssetManagementSystem.Domain.ReadModels;
-
 namespace AssetManagementSystem.Application.Common.Mappings;
-
 public static class AssetMappings
 {
     /// <summary>

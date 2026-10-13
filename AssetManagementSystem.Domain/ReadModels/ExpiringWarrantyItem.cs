@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Domain.ReadModels;
-
 /// <summary>
 /// Vetem ato qe i duhen email-it te njoftimit: kater fusha nga 16 te tabeles Assets.
 ///

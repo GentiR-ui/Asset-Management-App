@@ -1,8 +1,6 @@
 using AssetManagementSystem.Application.DTOs.Employees;
 using AssetManagementSystem.Domain.ReadModels;
-
 namespace AssetManagementSystem.Application.Common.Mappings;
-
 public static class EmployeeMappings
 {
     /// <summary>Nga read model-i: asnje navigim, asnje rrezik NullReferenceException.</summary>

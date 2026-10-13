@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.DTOs.Users;
-
 public sealed record AssignRoleRequest
 {
     // Pa `required`: nese mungon, e kap FluentValidation me nje mesazh te kuptueshem,

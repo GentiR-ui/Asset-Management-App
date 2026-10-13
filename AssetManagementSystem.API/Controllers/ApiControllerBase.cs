@@ -2,18 +2,12 @@ using System.Security.Claims;
 using AssetManagementSystem.Application.Common.Responses;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
-
 namespace AssetManagementSystem.API.Controllers;
-
 [ApiController]
 public abstract class ApiControllerBase : ControllerBase
 {
-   
     protected Guid CurrentUserId =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        
-
     protected IActionResult Success<T>(T data, int statusCode = StatusCodes.Status200OK) =>
         new ObjectResult(new BaseResponse<T>
         {
@@ -22,7 +16,6 @@ public abstract class ApiControllerBase : ControllerBase
             Data = data
         })
         { StatusCode = statusCode };
-
     protected IActionResult Success(string message, int statusCode = StatusCodes.Status200OK) =>
         new ObjectResult(new BaseResponse
         {
@@ -33,8 +26,6 @@ public abstract class ApiControllerBase : ControllerBase
         { StatusCode = statusCode };
     protected IActionResult HandleResult<T>(ErrorOr<T> result, int statusCode = StatusCodes.Status200OK) =>
         result.Match(value => Success(value, statusCode), Problem);
-
-    
     protected IActionResult HandleResult(ErrorOr<Success> result, string successMessage) =>
         result.Match<IActionResult>(_ => Success(successMessage), Problem);
     protected IActionResult Problem(List<Error> errors)
@@ -43,7 +34,6 @@ public abstract class ApiControllerBase : ControllerBase
         {
             return BuildError(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
         }
-
         if (errors.All(error => error.Type == ErrorType.Validation))
         {
             var response = new BaseResponse
@@ -55,14 +45,11 @@ public abstract class ApiControllerBase : ControllerBase
                     .GroupBy(error => error.Code)
                     .ToDictionary(group => group.Key, group => group.Select(e => e.Description).ToArray())
             };
-
             return new ObjectResult(response) { StatusCode = StatusCodes.Status400BadRequest };
         }
-
         var first = errors[0];
         return BuildError(ToStatusCode(first.Type), first.Description);
     }
-
     private static IActionResult BuildError(int statusCode, string message) =>
         new ObjectResult(new BaseResponse
         {
@@ -71,7 +58,6 @@ public abstract class ApiControllerBase : ControllerBase
             Message = message
         })
         { StatusCode = statusCode };
-
     private static int ToStatusCode(ErrorType errorType) => errorType switch
     {
         ErrorType.Validation   => StatusCodes.Status400BadRequest,

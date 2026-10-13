@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.DTOs.Department;
-
 public sealed record DepartmentResponse
 {
     public Guid Id { get; init; }

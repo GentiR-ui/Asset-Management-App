@@ -1,10 +1,8 @@
 namespace AssetManagementSystem.Application.DTOs.Auth;
-
 public sealed class ForgotPasswordRequest
 {
     public string Email { get; set; } = string.Empty;
 }
-
 public sealed class ResetPasswordRequest
 {
     public string Email { get; set; } = string.Empty;

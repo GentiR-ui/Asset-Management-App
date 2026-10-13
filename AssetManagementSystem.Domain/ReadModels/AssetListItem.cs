@@ -1,7 +1,5 @@
 using AssetManagementSystem.Domain.Enums;
-
 namespace AssetManagementSystem.Domain.ReadModels;
-
 /// <summary>
 /// Forma e sheshte e nje aseti per LEXIM. Nuk eshte entitet: EF-i nuk e gjurmon kurre,
 /// pra AsNoTracking nuk duhet, dhe nuk mund te shkruhet aksidentalisht ne databaze.

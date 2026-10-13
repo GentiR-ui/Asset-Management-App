@@ -1,99 +1,142 @@
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using AssetManagementSystem.Domain.Common;
 using AssetManagementSystem.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace AssetManagementSystem.Infrastructure.Interceptors;
 
+/// <summary>
+/// Shton UpdatedAt dhe UpdatedBy ne cdo ExecuteUpdate mbi nje BaseEntity.
+///
+/// Ekziston sepse ExecuteUpdate nuk kalon nga ChangeTracker-i, pra ApplyAuditFields()
+/// nuk thirret kurre per te. Pa kete interceptor, rruga me e shpejte e shkrimit do te
+/// ishte e vetmja pa audit.
+/// </summary>
 public sealed class AuditExecuteUpdateInterceptor : IQueryExpressionInterceptor
 {
     private readonly ICurrentUserService _currentUser;
+    private readonly ILogger<AuditExecuteUpdateInterceptor> _logger;
 
-    public AuditExecuteUpdateInterceptor(ICurrentUserService currentUser)
+    public AuditExecuteUpdateInterceptor(
+        ICurrentUserService currentUser,
+        ILogger<AuditExecuteUpdateInterceptor> logger)
     {
         _currentUser = currentUser;
+        _logger = logger;
     }
 
     public Expression QueryCompilationStarting(Expression query, QueryExpressionEventData eventData)
     {
-        if (query is not MethodCallExpression call || 
-            (call.Method.Name != "ExecuteUpdate" && call.Method.Name != "ExecuteUpdateAsync"))
+        if (query is not MethodCallExpression call
+            || (call.Method.Name != "ExecuteUpdate" && call.Method.Name != "ExecuteUpdateAsync"))
         {
             return query;
         }
 
-        var genericArgs = call.Method.GetGenericArguments();
-        if (genericArgs.Length == 0) return query;
+        var genericArguments = call.Method.GetGenericArguments();
+        if (genericArguments.Length == 0)
+        {
+            return query;
+        }
 
-        var entityType = genericArgs[0];
-        
+        var entityType = genericArguments[0];
         if (!typeof(BaseEntity).IsAssignableFrom(entityType))
         {
             return query;
         }
 
-        if (call.Arguments.Count < 2) return query;
-
-        var setters = StripQuotes(call.Arguments[1]) as LambdaExpression;
-        if (setters is null) return query;
-
-        var body = setters.Body;
-
-        // 1. Shto automatikisht UpdatedAt
-        if (entityType.GetProperty(nameof(BaseEntity.UpdatedAt)) != null)
+        if (call.Arguments.Count < 2)
         {
-            body = AppendSetProperty(
-                body, 
-                entityType, 
-                nameof(BaseEntity.UpdatedAt),
-                Expression.Property(null, typeof(DateTime), nameof(DateTime.UtcNow)));
+            return query;
         }
 
-        // 2. Shto automatikisht UpdatedBy. Userin e lexon ICurrentUserService — i njejti
-        // burim si ApplyAuditFields, qe dy rruget e shkrimit te mos divergjojne.
-        var userId = _currentUser.UserId;
-        if (userId != Guid.Empty && entityType.GetProperty(nameof(BaseEntity.UpdatedBy)) != null)
+        // ── Forma e setters-ave ndryshoi me EF Core 10 ───────────────────────────
+        // Deri ne EF 9 vinin si LambdaExpression me zinxhir:
+        //     setter => setter.SetProperty(a => a.X, v).SetProperty(a => a.Y, w)
+        //
+        // Ne EF 10 i njejti kod C# perkthehet ne nje VARG:
+        //     new ITuple[] { new Tuple<Delegate, object>(a => a.X, (object)v), ... }
+        //
+        // Versioni i meparshem kerkonte lambda-n, nuk e gjente, dhe hiqte dore pa asnje
+        // mesazh — prandaj nje reset i 3,332 rreshtave doli pa asnje fushe auditi.
+        // Per kete, cdo forme e panjohur tani logohet si Error, nuk heshtet.
+        if (StripQuotes(call.Arguments[1]) is not NewArrayExpression setterArray)
         {
-            body = AppendSetProperty(
-                body,
-                entityType,
+            _logger.LogError(
+                "AUDIT: forma e setters-ave nuk njihet ({Type}). UpdatedAt/UpdatedBy NUK u shtuan "
+                + "per {Entity} — ka gjasa qe versioni i EF Core-it te kete ndryshuar.",
+                call.Arguments[1].GetType().Name,
+                entityType.Name);
+
+            return query;
+        }
+
+        var setters = setterArray.Expressions.ToList();
+        var originalCount = setters.Count;
+        var tupleConstructor = typeof(Tuple<Delegate, object>).GetConstructors()[0];
+
+        AppendSetter(setters, tupleConstructor, entityType,
+            nameof(BaseEntity.UpdatedAt),
+            Expression.Constant((DateTime?)DateTime.UtcNow, typeof(DateTime?)));
+
+        var currentUserId = _currentUser.UserId;
+
+        // Guid.Empty = pa kerkese HTTP (migrim, seed, background job). NULL e thote te verteten.
+        if (currentUserId != Guid.Empty)
+        {
+            AppendSetter(setters, tupleConstructor, entityType,
                 nameof(BaseEntity.UpdatedBy),
-                Expression.Constant((Guid?)userId, typeof(Guid?)));
+                Expression.Constant((Guid?)currentUserId, typeof(Guid?)));
         }
 
-        var newSetters = Expression.Lambda(setters.Type, body, setters.Parameters);
-        return call.Update(call.Object, [call.Arguments[0], newSetters]);
+        if (setters.Count == originalCount)
+        {
+            return query;
+        }
+
+        var arguments = call.Arguments.ToList();
+        arguments[1] = Expression.NewArrayInit(typeof(ITuple), setters);
+
+        _logger.LogInformation(
+            "AUDIT: {Entity} — setters {Before} -> {After}.",
+            entityType.Name, originalCount, setters.Count);
+
+        return call.Update(call.Object, arguments);
     }
 
-    private static Expression AppendSetProperty(
-        Expression chain, 
+    /// <summary>
+    /// Shton nje element Tuple&lt;Delegate, object&gt;(a =&gt; a.Prop, (object)vlera),
+    /// pikerisht forma qe EF Core 10 pret ne vargun e setters-ave.
+    /// </summary>
+    private static void AppendSetter(
+        List<Expression> setters,
+        ConstructorInfo tupleConstructor,
         Type entityType,
-        string propName, 
+        string propertyName,
         Expression value)
     {
-        var prop = entityType.GetProperty(propName);
-        if (prop is null) return chain;
-
-        var e = Expression.Parameter(entityType, "e");
-        var selector = Expression.Lambda(Expression.Property(e, prop), e);
-
-        var method = chain.Type.GetMethods()
-            .FirstOrDefault(m => m.Name == "SetProperty" 
-                                 && m.GetParameters().Length == 2
-                                 && m.GetParameters()[1].ParameterType.IsGenericParameter);
-
-        if (method is null) return chain;
-
-        var genericMethod = method.MakeGenericMethod(prop.PropertyType);
-
-        if (value.Type != prop.PropertyType)
+        var property = entityType.GetProperty(propertyName);
+        if (property is null)
         {
-            value = Expression.Convert(value, prop.PropertyType);
+            return;
         }
 
-        return Expression.Call(chain, genericMethod, selector, value);
+        // Parameter i vecante per cdo lambda — secila eshte shprehje e pavarur.
+        var parameter = Expression.Parameter(entityType, "a");
+        var selector = Expression.Lambda(Expression.Property(parameter, property), parameter);
+
+        setters.Add(Expression.New(
+            tupleConstructor,
+            selector,
+            Expression.Convert(value, typeof(object))));
     }
 
-    private static Expression StripQuotes(Expression e) =>
-        e is UnaryExpression { NodeType: ExpressionType.Quote } u ? u.Operand : e;
+    private static Expression StripQuotes(Expression expression) =>
+        expression is UnaryExpression { NodeType: ExpressionType.Quote } unary
+            ? unary.Operand
+            : expression;
 }

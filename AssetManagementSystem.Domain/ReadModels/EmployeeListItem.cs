@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Domain.ReadModels;
-
 /// <summary>
 /// Forma e sheshte e nje punonjesi per LEXIM. Emri, mbiemri dhe email-i vijne nga llogaria
 /// e lidhur — dhe kjo ishte arsyeja pse metodat e leximit benin Include(employee.User),

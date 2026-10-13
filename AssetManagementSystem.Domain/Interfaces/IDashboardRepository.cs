@@ -1,13 +1,10 @@
 using AssetManagementSystem.Domain.ReadModels;
-
 namespace AssetManagementSystem.Domain.Interfaces;
-
 public interface IDashboardRepository
 {
     // Pa parameter departamenti: kufizimi sipas departamentit zbatohet nga global
     // query filter-i mbi Asset (shih ApplicationDbContext). Nje rregull, nje vend.
     Task<AssetValueSummary> AssetValueSummaryAsync(CancellationToken cancellationToken = default);
-
     /// <summary>
     /// ⚠️ PERJASHTIM nga rregulli i ketij interface-i: kjo metode ekzekuton stored procedure
     /// permes Dapper-it, pra SQL i papERPUNUAR — dhe global query filter-i NUK zbatohet.
@@ -22,10 +19,7 @@ public interface IDashboardRepository
     Task<IReadOnlyList<DepartmentAssetValue>> AssetValuesByDepartmentAsync(
         Guid? departmentId,
         CancellationToken cancellationToken = default);
-
     Task<IReadOnlyList<StatusAssetValue>> AssetValuesByStatusAsync(CancellationToken cancellationToken = default);
-
     Task<IReadOnlyList<CategoryAssetValue>> AssetValuesByCategoryAsync(CancellationToken cancellationToken = default);
-
     Task<IReadOnlyList<AgeBucketCount>> AssetValuesByAgeAsync(AssetAgeCutoffs cutoffs, CancellationToken cancellationToken = default);
 }

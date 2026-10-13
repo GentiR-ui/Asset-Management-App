@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
 namespace AssetManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -16,7 +14,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 table: "Assets",
                 type: "bit",
                 nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Departments",
                 columns: table => new
@@ -32,20 +29,17 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Departments", x => x.Id);
                 });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Departments_Code",
                 table: "Departments",
                 column: "Code",
                 unique: true);
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "Departments");
-
             migrationBuilder.DropColumn(
                 name: "AssignedToEmployee",
                 table: "Assets");

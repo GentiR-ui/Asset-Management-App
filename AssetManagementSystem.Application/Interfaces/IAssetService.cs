@@ -2,9 +2,7 @@ using AssetManagementSystem.Application.DTOs.Assets;
 using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Domain.Interfaces;
 using ErrorOr;
-
 namespace AssetManagementSystem.Application.Interfaces;
-
 public interface IAssetService
 {
     Task<ErrorOr<AssetResponse>> CreateAsync(CreateAssetRequest request, CancellationToken cancellationToken = default);
@@ -17,4 +15,3 @@ public interface IAssetService
     Task<ErrorOr<Success>> TransferAssetToDepartmentAsync(Guid assetId, Guid newDepartmentId, CancellationToken cancellationToken = default);
     Task<ErrorOr<Success>> ResetDepartmentAssetsAsync(Guid departmentId, CancellationToken cancellationToken = default);
 }
-

@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
 namespace AssetManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -18,7 +16,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 nullable: true,
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier");
-
             migrationBuilder.AlterColumn<Guid>(
                 name: "CreatedBy",
                 table: "Employees",
@@ -26,7 +23,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 nullable: true,
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier");
-
             migrationBuilder.AlterColumn<Guid>(
                 name: "CreatedBy",
                 table: "Departments",
@@ -34,7 +30,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 nullable: true,
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier");
-
             migrationBuilder.AlterColumn<Guid>(
                 name: "CreatedBy",
                 table: "Assets",
@@ -43,7 +38,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier");
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
@@ -56,7 +50,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier",
                 oldNullable: true);
-
             migrationBuilder.AlterColumn<Guid>(
                 name: "CreatedBy",
                 table: "Employees",
@@ -66,7 +59,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier",
                 oldNullable: true);
-
             migrationBuilder.AlterColumn<Guid>(
                 name: "CreatedBy",
                 table: "Departments",
@@ -76,7 +68,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 oldClrType: typeof(Guid),
                 oldType: "uniqueidentifier",
                 oldNullable: true);
-
             migrationBuilder.AlterColumn<Guid>(
                 name: "CreatedBy",
                 table: "Assets",

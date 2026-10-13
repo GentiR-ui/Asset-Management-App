@@ -1,8 +1,6 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Enums;
-
 namespace AssetManagementSystem.Application.DTOs.Assets;
-
 public sealed record UpdateAssetRequest
 {
     public string AssetTag { get; init; } = string.Empty;

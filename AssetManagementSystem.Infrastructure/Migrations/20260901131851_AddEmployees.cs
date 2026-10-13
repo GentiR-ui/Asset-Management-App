@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
 namespace AssetManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -14,13 +12,11 @@ namespace AssetManagementSystem.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "AssignedToEmployee",
                 table: "Assets");
-
             migrationBuilder.AddColumn<Guid>(
                 name: "AssignedToEmployeeId",
                 table: "Assets",
                 type: "uniqueidentifier",
                 nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
@@ -50,35 +46,29 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Departments_Name",
                 table: "Departments",
                 column: "Name",
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_AssignedToEmployeeId",
                 table: "Assets",
                 column: "AssignedToEmployeeId");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_DepartmentId",
                 table: "Employees",
                 column: "DepartmentId");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_EmployeeCode",
                 table: "Employees",
                 column: "EmployeeCode",
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_UserId",
                 table: "Employees",
                 column: "UserId",
                 unique: true);
-
             migrationBuilder.AddForeignKey(
                 name: "FK_Assets_Employees_AssignedToEmployeeId",
                 table: "Assets",
@@ -87,29 +77,23 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_Assets_Employees_AssignedToEmployeeId",
                 table: "Assets");
-
             migrationBuilder.DropTable(
                 name: "Employees");
-
             migrationBuilder.DropIndex(
                 name: "IX_Departments_Name",
                 table: "Departments");
-
             migrationBuilder.DropIndex(
                 name: "IX_Assets_AssignedToEmployeeId",
                 table: "Assets");
-
             migrationBuilder.DropColumn(
                 name: "AssignedToEmployeeId",
                 table: "Assets");
-
             migrationBuilder.AddColumn<bool>(
                 name: "AssignedToEmployee",
                 table: "Assets",

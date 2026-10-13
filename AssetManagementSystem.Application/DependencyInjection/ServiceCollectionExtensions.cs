@@ -6,15 +6,11 @@ using AssetManagementSystem.Domain.Interfaces;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 namespace AssetManagementSystem.Application.DependencyInjection;
-
-
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
-
         services.AddScoped<IAuthService, AuthService>();
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
         services.AddScoped<IAccountService, AccountService>();
@@ -30,18 +26,14 @@ public static class ServiceCollectionExtensions
         // AuditExecuteUpdateInterceptor (Singleton) varet nga ai: nje Singleton nuk
         // mund te konsumoje Scoped (captive dependency) dhe .NET-i nuk niset fare.
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
-
         // Job-i i garancive: Scoped, sepse Hangfire krijon nje scope per cdo ekzekutim.
         services.AddScoped<IWarrantyExpireJob, WarrantyExpireJob>();
         services.AddScoped<IRefreshTokenCleanupJob, RefreshTokenCleanupJob>();
-
         // JASHTE PERDORIMIT: oraret i mban Hangfire tani (shih Program.cs).
         // Klasa WarrantyExpireBackgroundService mbetet ne kod vetem per krahasim;
         // nese regjistrohet bashke me job-in, njoftimi dergohet DY here.
         // services.AddHostedService<WarrantyExpireBackgroundService>();
-        
         var redisConnection = configuration.GetConnectionString("Redis");
-
         if (string.IsNullOrWhiteSpace(redisConnection))
         {
             // Pa Redis te konfiguruar, aplikacioni duhet te niset gjithsesi.
@@ -55,11 +47,9 @@ public static class ServiceCollectionExtensions
                 options.InstanceName = "ams:";
             });
         }
-
         services.AddScoped<ICacheService, CacheService>();
+        services.AddScoped<IAbuseAlertJob, AbuseAlertJob>();
 
         return services;
-        
-       
     }
 }

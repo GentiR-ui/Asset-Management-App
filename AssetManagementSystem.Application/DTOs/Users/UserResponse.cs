@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.DTOs.Users;
-
 public sealed record UserResponse
 {
     public required Guid Id { get; init; } 

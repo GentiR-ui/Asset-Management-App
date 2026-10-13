@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Domain.ReadModels;
-
 /// <summary>
 /// Nje faqe rezultatesh plus totali i rreshtave qe e plotesojne filtrin.
 /// Pa TotalCount, klienti s'di sa faqe ka.

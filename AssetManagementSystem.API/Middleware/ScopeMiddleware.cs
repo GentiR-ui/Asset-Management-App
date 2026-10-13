@@ -1,8 +1,6 @@
 using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.Domain.Interfaces;
-
 namespace AssetManagementSystem.API.Middleware;
-
 /// <summary>
 /// Zgjidh scope-in nje here per kerkese dhe e ruan te IScopeContext, qe ApplicationDbContext
 /// ta lexoje sinkronisht kur nderton global query filter-in.
@@ -11,12 +9,10 @@ namespace AssetManagementSystem.API.Middleware;
 public sealed class ScopeMiddleware
 {
     private readonly RequestDelegate _next;
-
     public ScopeMiddleware(RequestDelegate next)
     {
         _next = next;
     }
-
     public async Task InvokeAsync(
         HttpContext context,
         IAssetScopeResolver scopeResolver,
@@ -27,7 +23,6 @@ public sealed class ScopeMiddleware
             try
             {
                 var scope = await scopeResolver.ResolveScopeAsync(context.RequestAborted);
-
                 if (scope.IsGlobal)
                 {
                     scopeContext.SetGlobal();
@@ -43,7 +38,6 @@ public sealed class ScopeMiddleware
                 scopeContext.SetGlobal();
             }
         }
-
         await _next(context);
     }
 }

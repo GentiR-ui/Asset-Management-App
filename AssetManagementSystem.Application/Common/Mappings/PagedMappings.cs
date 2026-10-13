@@ -1,8 +1,6 @@
 using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Domain.ReadModels;
-
 namespace AssetManagementSystem.Application.Common.Mappings;
-
 public static class PagedMappings
 {
     /// <summary>

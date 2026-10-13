@@ -1,8 +1,6 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Enums;
-
 namespace AssetManagementSystem.Application.DTOs.Assets;
-
 public sealed record CreateAssetRequest
 {
     public string AssetTag { get; init; } = string.Empty;
@@ -15,4 +13,3 @@ public sealed record CreateAssetRequest
     public string? Notes { get; init; }
     public Guid DepartmentId { get; init; }
 }
-

@@ -1,9 +1,7 @@
 using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.ReadModels;
 using ErrorOr;
-
 namespace AssetManagementSystem.Domain.Interfaces;
-
 public interface IIdentityProvider
 {
     Task<ErrorOr<User>> CreateUserAsync(
@@ -12,13 +10,9 @@ public interface IIdentityProvider
         string email,
         string password,
         bool emailConfirmed = false);
-
     Task<ErrorOr<User>> ValidateCredentialsAsync(string email, string password);
-
     Task<IList<string>> GetRolesAsync(User user);
-
     Task AddToRoleAsync(User user, string role);
-
     Task<string> GenerateEmailConfirmationTokenAsync(User user);
     Task<ErrorOr<Success>> ConfirmEmailAsync(User user, string token);
     Task<User?> FindByEmailAsync(string email);
@@ -31,9 +25,6 @@ public interface IIdentityProvider
     Task<ErrorOr<Success>> RemoveRoleAsync(User user, string roleName);
     Task<ErrorOr<Success>> UpdateUserAsync(User user, string firstName, string lastName);
     Task<ErrorOr<Success>> DeleteUserAsync(User user);
-
     /// <summary>Sa userë e kanë këtë rol — na duhet për të mbrojtur Adminin e fundit.</summary>
     Task<int> CountUsersInRoleAsync(string roleName);
-    
-    
 }

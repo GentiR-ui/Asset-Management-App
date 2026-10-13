@@ -1,8 +1,6 @@
 using AssetManagementSystem.Application.Common.Constants;
 using AssetManagementSystem.Domain.Interfaces;
-
 namespace AssetManagementSystem.Application.Common.Caching;
-
 public static class CacheInvalidationExtensions
 {
     // 1. Ky overload përdoret kur nuk i jep departmentId (p.sh. fshin vetëm globalen)
@@ -12,7 +10,6 @@ public static class CacheInvalidationExtensions
     {
         return cache.InvalidateDashboardAsync(null, cancellationToken);
     }
-
     // 2. Ky overload përdoret kur i jep departmentId dhe cancellationToken
     public static async Task InvalidateDashboardAsync(
         this ICacheService cache,
@@ -23,7 +20,6 @@ public static class CacheInvalidationExtensions
         {
             // Fshihet kasha globale
             await cache.RemoveAsync($"{key}:global", cancellationToken);
-
             // Nese u specifikua nje departament, fshihet edhe kasha e tij
             if (departmentId.HasValue)
             {

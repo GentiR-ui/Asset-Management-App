@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.DTOs.Dashboard;
-
 public sealed record CategoryValueResponse
 {
     public required string Category { get; init; }

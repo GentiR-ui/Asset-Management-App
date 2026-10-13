@@ -2,9 +2,7 @@ using AssetManagementSystem.Application.DTOs.Common;
 using AssetManagementSystem.Application.DTOs.Department;
 using AssetManagementSystem.Domain.Interfaces;
 using ErrorOr;
-
 namespace AssetManagementSystem.Application.Interfaces;
-
 public interface IDepartmentService
 {
     Task<ErrorOr<DepartmentResponse>> CreateDepartmentAsync(CreateDepartmentRequest request, CancellationToken cancellationToken = default);

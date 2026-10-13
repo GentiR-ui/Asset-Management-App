@@ -1,7 +1,5 @@
 using ErrorOr;
-
 namespace AssetManagementSystem.Domain.Errors;
-
 public static class AuthErrors
 {
     /// <summary>

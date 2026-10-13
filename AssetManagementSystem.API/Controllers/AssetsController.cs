@@ -5,72 +5,53 @@ using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace AssetManagementSystem.API.Controllers;
-
 // Presja do te thote OSE — Admin OSE IT-Manager. Employee nuk krijon asete.
 [Authorize(Roles = $"{AppRoles.Admin},{AppRoles.ItManager}")]
 [Route("api/assets")]
 public sealed class AssetsController : ApiControllerBase
 {
     private readonly IAssetService _assetService;
-
     public AssetsController(IAssetService assetService)
     {
         _assetService = assetService;
     }
-
     [HttpPost]
     public async Task<IActionResult> Create(CreateAssetRequest request, CancellationToken cancellationToken)
     {
         var result = await _assetService.CreateAsync(request, cancellationToken);
-
         return HandleResult(result, StatusCodes.Status201Created);
     }
-
-    
     [HttpGet("categories")]
     public IActionResult GetCategories() => Success(Enum.GetNames<AssetCategory>());
-
     /// <summary>Statuset e lejuara — po ashtu per dropdown/filtra.</summary>
     [HttpGet("statuses")]
     public IActionResult GetStatuses() => Success(Enum.GetNames<AssetStatus>());
-
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _assetService.GetByIdAsync(id, cancellationToken);
-
         return HandleResult(result);
     }
-
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] AssetQueryRequest request, CancellationToken cancellationToken)
     {
         var assets = await _assetService.GetPagedAsync(request, cancellationToken);
-
         return Success(assets);
     }
-
-    
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateAssetRequest request, CancellationToken cancellationToken)
     {
         var result = await _assetService.UpdateAsync(id, request, cancellationToken);
-
         return HandleResult(result);
     }
-
     [Authorize(Roles = AppRoles.Admin)]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result = await _assetService.DeleteAsync(id, cancellationToken);
-
         return HandleResult(result, "Asset deleted successfully.");
     }
-
-
     [HttpPost("{assetId:guid}/assign")]
     public async Task<IActionResult> AssignAssetToEmployee(
         Guid assetId,
@@ -78,20 +59,16 @@ public sealed class AssetsController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _assetService.AssignAssetToEmployeeAsync(assetId, request, cancellationToken);
-
         return HandleResult(result, "Asset assigned to employee successfully.");
     }
-
     [HttpPost("{assetId:guid}/unassign")]
     public async Task<IActionResult> UnassignAssetFromEmployee(
         Guid assetId,
         CancellationToken cancellationToken)
     {
         var result = await _assetService.UnassignAssetFromEmployeeAsync(assetId, cancellationToken);
-
         return HandleResult(result, "Asset unassigned from employee successfully.");
     }
-
     [HttpPost("{assetId:guid}/transfer-department")]
     public async Task<IActionResult> TransferDepartment(
         Guid assetId,
@@ -101,16 +78,12 @@ public sealed class AssetsController : ApiControllerBase
         var result = await _assetService.TransferAssetToDepartmentAsync(assetId, request.DepartmentId, cancellationToken);
         return HandleResult(result, "Asset transferred to department successfully.");
     }
-
-
     [HttpPost("departments/{departmentId:guid}/unassign-assets")]
     public async Task<IActionResult> ResetDepartmentAssets(
         Guid departmentId,
         CancellationToken cancellationToken)
     {
         var result = await _assetService.ResetDepartmentAssetsAsync(departmentId, cancellationToken);
-
         return HandleResult(result, "All assets for department unassigned successfully.");
     }
 }
-

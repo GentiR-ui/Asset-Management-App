@@ -1,6 +1,5 @@
 using AssetManagementSystem.Application.DTOs.Auth;
 using FluentValidation;
-
 namespace AssetManagementSystem.Application.Validators;
 public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 {

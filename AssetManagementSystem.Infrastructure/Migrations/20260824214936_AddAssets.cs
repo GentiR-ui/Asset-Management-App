@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
 namespace AssetManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -32,30 +30,25 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Assets", x => x.Id);
                 });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_AssetTag",
                 table: "Assets",
                 column: "AssetTag",
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_Category",
                 table: "Assets",
                 column: "Category");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_SerialNumber",
                 table: "Assets",
                 column: "SerialNumber",
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_Status",
                 table: "Assets",
                 column: "Status");
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

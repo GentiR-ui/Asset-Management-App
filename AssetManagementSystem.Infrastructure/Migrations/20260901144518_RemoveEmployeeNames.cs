@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
 namespace AssetManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -13,12 +11,10 @@ namespace AssetManagementSystem.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "FirstName",
                 table: "Employees");
-
             migrationBuilder.DropColumn(
                 name: "LastName",
                 table: "Employees");
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
@@ -29,7 +25,6 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 maxLength: 100,
                 nullable: false,
                 defaultValue: "");
-
             migrationBuilder.AddColumn<string>(
                 name: "LastName",
                 table: "Employees",

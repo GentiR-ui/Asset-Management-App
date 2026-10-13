@@ -1,5 +1,4 @@
 using ErrorOr;
-
 namespace AssetManagementSystem.Domain.Interfaces;
 public interface ITransactionRunner
 {

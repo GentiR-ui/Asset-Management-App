@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
 namespace AssetManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -17,14 +15,12 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 type: "uniqueidentifier",
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
-
             migrationBuilder.AddColumn<Guid>(
                 name: "CreatedBy",
                 table: "Departments",
                 type: "uniqueidentifier",
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
-
             migrationBuilder.AddColumn<Guid>(
                 name: "CreatedBy",
                 table: "Assets",
@@ -32,18 +28,15 @@ namespace AssetManagementSystem.Infrastructure.Migrations
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
                 name: "CreatedBy",
                 table: "Employees");
-
             migrationBuilder.DropColumn(
                 name: "CreatedBy",
                 table: "Departments");
-
             migrationBuilder.DropColumn(
                 name: "CreatedBy",
                 table: "Assets");

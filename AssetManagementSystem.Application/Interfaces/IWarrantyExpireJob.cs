@@ -1,5 +1,4 @@
 namespace AssetManagementSystem.Application.Interfaces;
-
 /// <summary>
 /// Job-i i njoftimit per garanci qe skadojne. Thirret nga Hangfire sipas orarit,
 /// por eshte metode e zakonshme — mund te thirret edhe nga kudo tjeter.
