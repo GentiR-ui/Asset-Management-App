@@ -24,25 +24,33 @@ public sealed class AssetRepository : IAssetRepository
     /// udhezim per SQL, dhe EF-i e perkthen ne LEFT JOIN. Per kete navigimi nuk mund te
     /// jete null ne heshtje, si ndodhte kur Include-i mungonte.
     /// </summary>
-    private static readonly Expression<Func<Asset, AssetListItem>> ToListItem =
-        asset => new AssetListItem(
-            asset.Id,
-            asset.AssetTag,
-            asset.Name,
-            asset.Category,
-            asset.SerialNumber,
-            asset.Status,
-            asset.PurchaseDate,
-            asset.PurchasePrice,
-            asset.WarrantyExpiryDate,
-            asset.Notes,
-            asset.CreatedAt,
-            asset.DepartmentId,
-            asset.Department.Name,
-            asset.AssignedToEmployeeId,
-            asset.AssignedToEmployee == null
-                ? null
-                : asset.AssignedToEmployee.User.FirstName + " " + asset.AssignedToEmployee.User.LastName);
+   private static readonly Expression<Func<Asset, AssetListItem>> ToListItem =
+    asset => new AssetListItem(
+        asset.Id,
+        asset.AssetTag,
+        asset.Name,
+        asset.Category,
+        asset.SerialNumber,
+        asset.Status,
+        asset.PurchaseDate,
+        asset.PurchasePrice,
+        asset.WarrantyExpiryDate,
+        asset.Notes,
+        asset.CreatedAt,
+
+        // Të dhënat e Departamentit
+        asset.DepartmentId,
+        asset.Department != null ? asset.Department.Name : null,
+        asset.Department != null ? asset.Department.Description : null,
+        asset.Department != null ? asset.Department.Code : null,
+
+        // Të dhënat e Punonjësit (përdoren për EmployeeDto)
+        asset.AssignedToEmployeeId,
+        asset.AssignedToEmployee != null ? asset.AssignedToEmployee.EmployeeCode : null, // ose fusha përkatëse në entitet
+        asset.AssignedToEmployee != null ? asset.AssignedToEmployee.User.FirstName : null,
+        asset.AssignedToEmployee != null ? asset.AssignedToEmployee.User.LastName : null,
+        asset.AssignedToEmployee != null ? asset.AssignedToEmployee.User.Email : null
+    );
     public async Task<Asset?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Assets.FirstOrDefaultAsync(asset => asset.Id == id, cancellationToken);
     // Projeksion: pa Include, pa AsNoTracking. Rezultati nuk eshte entitet.

@@ -23,9 +23,13 @@ public class EmployeeRepository : IEmployeeRepository
             employee.User.LastName,
             employee.User.Email ?? string.Empty,
             employee.UserId,
+            employee.CreatedAt,
+            // Të dhënat e Departamentit
             employee.DepartmentId,
-            employee.Department.Name,
-            employee.CreatedAt);
+            employee.Department != null ? employee.Department.Name : null,
+            employee.Department != null ? employee.Department.Description : null,
+            employee.Department != null ? employee.Department.Code : null
+        );
     public async Task<Employee?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Employees.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);

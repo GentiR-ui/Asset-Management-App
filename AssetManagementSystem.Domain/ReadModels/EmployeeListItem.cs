@@ -11,6 +11,11 @@ public sealed record EmployeeListItem(
     string LastName,
     string Email,
     Guid UserId,
-    Guid DepartmentId,
-    string DepartmentName,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    
+     // Të dhënat e Departamentit (me Description)
+    Guid? DepartmentId,
+    string? DepartmentName,
+    string? DepartmentDescription,
+    string? DepartmentCode
+);
