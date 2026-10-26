@@ -17,3 +17,10 @@ postman/
 # Sekrete
 appsettings.*.local.json
 *.pfx
+
+# Dokumente dhe skripte te gjeneruara lokalisht
+/generate_exact_speech_pdf.py
+/generate_presentation_pdf.py
+/Prezantimi_Asset_Management_System.pdf
+/Prezantimi_Fjalimi.pdf
+/Claude outputs/
