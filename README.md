@@ -18,6 +18,7 @@ A modern, enterprise-grade **IT Asset Management System (AMS)** built with **.NE
 - [Authorization & Scoping Model](#-authorization--scoping-model)
 - [Project Structure](#-project-structure)
 - [Tech Stack & Libraries](#-tech-stack--libraries)
+- [Business Logic & Asset Lifecycle](#-business-logic--asset-lifecycle)
 - [Database Schema & Global Query Filters](#-database-schema--global-query-filters)
 - [Background Processing (Hangfire)](#-background-processing-hangfire)
 - [AI Anomaly Detection (Groq)](#-ai-anomaly-detection-groq)
@@ -150,7 +151,7 @@ Qellimi i ketij aplikacioni eshte menaxhimi i Aseteve, Punetoreve dhe Departamen
 
 
 
-3. Nje punetor kur krijohet duhet te jete domosdoshmerisht te percaktuar ne nje departament. Nuk mund te ekzistoj punetor pa departament. Nje punetor mund te jete me rol punetor i thjeshte dhe mund te jete IT-Menager. Krijimi i nje punetori behet me create user dhe nese ja jep rolin employee ose IT-Menager duhet patjeter te perfshij pastaj edhe departmentId qe i perket edhe employeeCode. Rolin client e ko bo vetem per regjistrim sa per me pas si opsion sepse ai ska te drejt asgje, vetem per ta demonstruar regjistrimin sepse asnje punetor nuk guxon me bo regjistrim ata krijohen vetem nga Admini. Admini ka te drejte ta fshij ose ta ndryshoj nje punetor vetem nese ai punetor nuk ka asete ne pronesi sepse ato asete njeher duhet te barten ne departmantin tjeter qe pastaj te lejohet te i nderrohet asetit departamenti e pastaj te u behen assigned ato asete ati punetori.
+3. Nje punetor kur krijohet duhet te jete domosdoshmerisht te percaktuar ne nje departament. Nuk mund te ekzistoj punetor pa departament. Nje punetor mund te jete me rol punetor i thjeshte dhe mund te jete IT-Menager. Krijimi i nje punetori behet me create user dhe nese ja jep rolin employee ose IT-Menager duhet patjeter te perfshij pastaj edhe departmentId qe i perket edhe employeeCode. Rolin client e ko bo vetem per regjistrim sa per me pas si opsion sepse ai ska te drejt asgje, vetem per ta demonstruar regjistrimin sepse asnje punetor nuk guxon me bo regjistrim ata krijohen vetem nga Admini. Admini ka te drejte ta fshij ose ta ndryshoj nje punetor vetem nese ai punetor nuk ka asete ne pronesi sepse ato asete njeher duhet te barten ne departmantin tjeter qe pastaj te lejohet te i nderrohet asetit departamenti e pastaj te u behen assigned ato asete ati punetori. Ndersa IT-Menager ka te drejte te bej ndryshime te nje punetor qe i perket vetem ati departamenti ku eshte edhe IT-Menager dhe krejt qa ka te drejt me nba update eshte vetem employeeCode se emri e te dhenat tjera vetem admini ka te drejte per arsye se vetem admini ka kontroll per krijimin e punetoreve kshtuqe nuk ka logjik me u ba te dhenat update per ata puntor kur nuk ki drejte me kriju ti si IT-Menager se pastaj ti po ki te drejta sikur me kriju punetor te ri nese ti ja ndryshon emrin dhe mbiemrin.
 
 4. Nje Departament ka asete dhe punetor. Asetet mund te perkasin vetem departamentit por mund ti perkasin edhe nje punetori.   Ja nje pershkrim vizual i nje departamenti:
 

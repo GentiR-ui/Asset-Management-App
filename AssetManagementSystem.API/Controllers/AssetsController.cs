@@ -5,9 +5,14 @@ using AssetManagementSystem.Domain.Entities;
 using AssetManagementSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using AssetManagementSystem.API.Constants;
+
 namespace AssetManagementSystem.API.Controllers;
+
 // Presja do te thote OSE — Admin OSE IT-Manager. Employee nuk krijon asete.
 [Authorize(Roles = $"{AppRoles.Admin},{AppRoles.ItManager}")]
+[EnableRateLimiting(RateLimitPolicies.GeneralPolicy)]
 [Route("api/assets")]
 public sealed class AssetsController : ApiControllerBase
 {

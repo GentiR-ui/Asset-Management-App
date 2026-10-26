@@ -29,6 +29,7 @@ public sealed class AssetScopeResolver : IAssetScopeResolver
         {
             return AssetQueryScope.Global();
         }
+        //Shiko në Redis/Memory Cache per te mos nxjerr 100 queries me rradh te nji perdoruesi
         var cacheKey = CacheKeyFor(_currentUser.UserId);
         var cached = await _cacheService.GetAsync<Guid?>(cacheKey, cancellationToken);
         if (cached is not null)

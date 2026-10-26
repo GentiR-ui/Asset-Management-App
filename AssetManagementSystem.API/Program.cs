@@ -4,9 +4,14 @@ using AssetManagementSystem.Application.Interfaces;
 using AssetManagementSystem.API.Middleware;
 using AssetManagementSystem.Application.DependencyInjection;
 using AssetManagementSystem.Infrastructure.DependencyInjection;
+using AssetManagementSystem.API.Extensions;
 using Hangfire;
 using Hangfire.Dashboard;
 using System.Text.Json.Serialization;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
+using AssetManagementSystem.API.Constants;
+
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -23,10 +28,17 @@ builder.Services.AddControllers(options =>
         options.JsonSerializerOptions.Converters.Add(
             new System.Text.Json.Serialization.JsonStringEnumConverter());
         options.JsonSerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
-    });
+    })
+.ConfigureApiBehaviorOptions(options =>
+{
+    options.SuppressModelStateInvalidFilter = true; // <--Ky kod i thotë ASP.NET: “Mos i trajto vetë gabimet e modelit (si email jo valid) në endpointet e mia. Lëre atë punë krejtësisht në duart e ValidationFilter dhe ExceptionFilter.”
+});
+
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddCustomRateLimiter();
 builder.Services.AddSingleton<RequestRateCounter>();
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -59,6 +71,9 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 app.UseAuthentication();
 app.UseAuthorization();
+// UseRateLimiter pas UseAuthorization: politika GeneralPolicy perdor UserId nga JWT,
+// pra rate limiter duhet te ekzekutohet pasi autentikimi ta kete ngarkuar User-in.
+app.UseRateLimiter();
 // Pas autentikimit: scope-i varet nga useri i identifikuar.
 app.UseMiddleware<ScopeMiddleware>();
 

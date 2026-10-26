@@ -11,11 +11,13 @@ public sealed class CacheService : ICacheService
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
     private readonly IDistributedCache _cache;
     private readonly ILogger<CacheService> _logger;
+
     private static readonly AsyncCircuitBreakerPolicy CircuitBreaker = Policy
         .Handle<Exception>(exception => exception is not OperationCanceledException)//per arsye se handleexception kap edhe anulimin kur klienti e anullon, dhe nuk duhet te bejme circuit breaker per kete
         .CircuitBreakerAsync(
             exceptionsAllowedBeforeBreaking: 3,
             durationOfBreak: TimeSpan.FromSeconds(10));
+        
     public CacheService(IDistributedCache cache, ILogger<CacheService> logger)
     {
         _cache = cache;
